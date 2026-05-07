@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Offset Dot Studio v1.0 · May 2026 -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offset Dot Pattern Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0a12;--surface:#12121e;--surface2:#1c1c2c;
+  --border:#22223a;--border2:#333350;
+  --accent:#c8ff3a;--text:#e8e8f8;--muted:#55556a;
+  --r:8px;--rl:12px;
+}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;height:100vh;overflow:hidden;user-select:none;}
+#app{width:100%;height:100vh;}
+
+/* ── Select screen ── */
+#sel{height:100vh;display:flex;flex-direction:column;padding:24px;gap:18px;overflow-y:auto;}
+#sel::-webkit-scrollbar{width:4px;}
+#sel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.title{font-family:'Bebas Neue',cursive;font-size:34px;letter-spacing:4px;display:flex;align-items:baseline;gap:14px;}
+.title span{font-size:12px;letter-spacing:1px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-weight:300;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:10px;cursor:pointer;transition:border-color .15s,transform .15s;}
+.card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.card canvas{width:100%;height:110px;border-radius:6px;display:block;background:#fff;}
+.card-foot{margin-top:9px;display:flex;align-items:center;gap:7px;}
+.card-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.card-name{font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:1.5px;}
+.card-desc{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.5;font-weight:300;}
+
+/* ── Params screen ── */
+#panel{width:320px;flex-shrink:0;height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+#phdr{padding:14px 16px 12px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:9px;flex-shrink:0;}
+.back{background:none;border:1px solid var(--border2);color:#fff;font-family:'JetBrains Mono',monospace;font-size:17px;padding:6px 12px;border-radius:var(--r);cursor:pointer;width:fit-content;}
+.back:hover{color:#fff;border-color:#fff;}
+.phdr-row{display:flex;align-items:center;gap:8px;}
+.phdr-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.ptitle{font-family:'Bebas Neue',cursive;font-size:30px;letter-spacing:2px;color:#fff;}
+#pbody{flex:1;min-height:0;overflow-y:scroll;padding:14px 16px;}
+#pbody::-webkit-scrollbar{width:6px;}
+#pbody::-webkit-scrollbar-track{background:var(--surface2);border-radius:3px;}
+#pbody::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px;}
+#pbody::-webkit-scrollbar-thumb:hover{background:#fff;}
+.prow{margin-bottom:16px;}
+.plbl{display:block;font-size:15px;color:#fff;letter-spacing:.5px;margin-bottom:5px;}
+.srow{display:flex;align-items:center;gap:8px;}
+.sval{font-size:17px;color:#fff;min-width:36px;text-align:right;}
+input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:var(--border2);border-radius:2px;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer;transition:background .1s;}
+input[type=range]:hover::-webkit-slider-thumb{background:#fff;}
+input[type=color]{width:40px;height:32px;border:1px solid var(--border2);border-radius:var(--r);background:none;cursor:pointer;padding:2px;}
+.axrow{display:flex;gap:6px;}
+.axbtn{flex:1;padding:8px;border-radius:var(--r);font-family:'JetBrains Mono',monospace;font-size:18px;cursor:pointer;border:1px solid var(--border2);background:none;color:#fff;transition:all .1s;}
+.axbtn.on{background:var(--accent);color:#0a0a12;border-color:var(--accent);font-weight:600;}
+.togrow{display:flex;align-items:center;justify-content:space-between;}
+.tog{width:42px;height:24px;border-radius:12px;background:var(--border2);border:none;cursor:pointer;position:relative;transition:background .15s;flex-shrink:0;}
+.tog.on{background:var(--accent);}
+.tog::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s;}
+.tog.on::after{left:21px;}
+.abtn{width:100%;padding:10px 14px;border-radius:var(--r);font-family:'JetBrains Mono',monospace;font-size:17px;cursor:pointer;transition:all .1s;text-align:left;letter-spacing:.3px;display:block;}
+.abtn-p{background:var(--accent);color:#0a0a12;border:none;font-weight:600;}
+.abtn-p:hover{background:#fff;}
+.abtn-s{background:none;border:1px solid var(--border2);color:#fff;}
+.abtn-s:hover{border-color:#fff;color:#fff;}
+.abtn-row{display:flex;gap:6px;}
+.abtn-row .abtn-s{flex:1;text-align:center;}
+
+/* ── Canvas area ── */
+#carea{flex:1;position:relative;background:#fff;overflow:hidden;}
+#cv{display:block;position:absolute;inset:0;width:100%;height:100%;}
+/* ── Gallery custom dropdown ── */
+#par{display:flex;height:100vh;position:relative;}
+.gal-drop{position:relative;width:100%;}
+.gal-trigger{width:100%;background:var(--surface2);color:#fff;border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:16px;cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;}
+.gal-trigger:hover,.gal-trigger.open{border-color:var(--accent);}
+.gal-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);z-index:200;overflow-y:auto;max-height:300px;display:none;}
+.gal-list.open{display:block;}
+.gal-item{padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:15px;color:#fff;cursor:pointer;display:flex;align-items:center;gap:9px;}
+.gal-item:hover{background:var(--surface);color:var(--accent);}
+.gal-item.active{color:var(--accent);}
+.gal-item-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+#gal-preview{position:absolute;left:328px;top:14px;width:268px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);overflow:hidden;z-index:300;display:none;box-shadow:0 6px 24px rgba(0,0,0,.6);}
+#gal-preview canvas{display:block;width:268px;height:168px;}
+/* ── Params scrollbar — defined above in params screen section ── */
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════════════════
+// SKILL: offsets-core  (spec-grid)
+// ═══════════════════════════════════════════════════════════════════
+function buildNS(b,W,H){
+  const dots=[];let row=0,y=b.y;
+  while(y<=b.y+b.h+1){
+    const x0=b.x+(row%2?W/2:0),rd=[];
+    for(let x=x0;x<=b.x+b.w+1;x+=W)rd.push([x,y]);
+    dots.push(rd);y+=H/2;row++;
+  }
+  const mc=Math.min(...dots.map(r=>r.length));
+  return{dots,vc:Array.from({length:Math.max(0,mc)},(_,i)=>i)};
+}
+function buildEW(b,W,H){
+  const dots=[];let col=0,x=b.x;
+  while(x<=b.x+b.w+1){
+    const y0=b.y+(col%2?H/2:0),cd=[];
+    for(let y=y0;y<=b.y+b.h+1;y+=H)cd.push([x,y]);
+    dots.push(cd);x+=W/2;col++;
+  }
+  if(!dots.length)return{dots:[],vr:[],nc:0};
+  const mr=Math.min(...dots.map(c=>c.length));
+  return{dots,vr:Array.from({length:Math.max(0,mr)},(_,i)=>i),nc:dots.length};
+}
+const cPts=(d,c)=>d.reduce((a,r)=>c<r.length?[...a,r[c]]:a,[]);
+const rPts=(d,r)=>d.reduce((a,c)=>r<c.length?[...a,c[r]]:a,[]);
+
+function dcNS(ctx,dots,vc,W,H,D,V,C,filt){
+  if(!D)return;
+  const r=Math.max(1,(W*H)/(2*Math.sqrt(W*W+H*H)*D));
+  ctx.fillStyle=C;
+  for(let ci=0;ci<vc.length-1;ci++){const cl=vc[ci],cr=vc[ci+1];
+    const lp=cPts(dots,cl),rp=cPts(dots,cr);if(lp.length<2||rp.length<2)continue;if(filt&&!filt(lp,rp))continue;
+    for(let row=0;row<dots.length-1;row++){
+      if(cl<dots[row].length&&cr<dots[row].length&&cl<dots[row+1].length&&cr<dots[row+1].length){
+        const[[x1,y1],[x2,y2],[x3,y3],[x4,y4]]=[dots[row][cl],dots[row][cr],dots[row+1][cl],dots[row+1][cr]];
+        ctx.beginPath();ctx.arc((x1+x2+x3+x4)/4,(y1+y2+y3+y4)/4,r,0,Math.PI*2);ctx.fill();
+      }
+    }
+  }
+}
+function dcEW(ctx,dots,vr,W,H,D,V,C,filt){
+  if(!D)return;
+  const r=Math.max(1,(W*H)/(2*Math.sqrt(W*W+H*H)*D));
+  ctx.fillStyle=C;
+  for(let ci=0;ci<dots.length-1;ci++)for(let ri=0;ri<vr.length-1;ri++){
+    const rt=vr[ri],rb=vr[ri+1];
+    const tp=rPts(dots,rt),bp=rPts(dots,rb);if(filt&&!filt(tp,bp))continue;
+    if(rt<dots[ci].length&&rb<dots[ci].length&&rt<dots[ci+1].length&&rb<dots[ci+1].length){
+      const[[x1,y1],[x2,y2],[x3,y3],[x4,y4]]=[dots[ci][rt],dots[ci][rb],dots[ci+1][rt],dots[ci+1][rb]];
+      ctx.beginPath();ctx.arc((x1+x2+x3+x4)/4,(y1+y2+y3+y4)/4,r,0,Math.PI*2);ctx.fill();
+    }
+  }
+}
+function cdNS(ctx,d,vc){ctx.fillStyle='#000';for(let r=0;r<d.length;r++)for(const c of vc)if(c<d[r].length){const[x,y]=d[r][c];ctx.beginPath();ctx.arc(x,y,2,0,Math.PI*2);ctx.fill();}}
+function cdEW(ctx,d,vr){ctx.fillStyle='#000';for(let ci=0;ci<d.length;ci++)for(const ri of vr)if(ri<d[ci].length){const[x,y]=d[ci][ri];ctx.beginPath();ctx.arc(x,y,2,0,Math.PI*2);ctx.fill();}}
+
+// ═══════════════════════════════════════════════════════════════════
+// SKILL: offsets-arc  (spec-arc)
+// ═══════════════════════════════════════════════════════════════════
+function arcP(p,x1,y1,x2,y2,bow){
+  if(!bow){p.lineTo(x2,y2);return;}
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+  if(!len){p.lineTo(x2,y2);return;}
+  const px=-dy/len,py=dx/len,qx=(x1+x2)/2+px*bow,qy=(y1+y2)/2+py*bow;
+  p.bezierCurveTo(x1+(2/3)*(qx-x1),y1+(2/3)*(qy-y1),x2+(2/3)*(qx-x2),y2+(2/3)*(qy-y2),x2,y2);
+}
+function arcL(ctx,x1,y1,x2,y2,bow){const p=new Path2D();p.moveTo(x1,y1);arcP(p,x1,y1,x2,y2,bow);ctx.stroke(p);}
+
+// NS fill polygon: lbf=left bow fn, rbf=right bow fn, hb=horizontal connector bow
+function nsStrip(lp,rp,lbf,rbf,hb){
+  const p=new Path2D();p.moveTo(...lp[0]);
+  for(let s=0;s<lp.length-1;s++)arcP(p,...lp[s],...lp[s+1],lbf(s));
+  arcP(p,...lp[lp.length-1],...rp[rp.length-1],hb);
+  for(let s=rp.length-1;s>0;s--)arcP(p,...rp[s],...rp[s-1],-rbf(s-1));
+  arcP(p,...rp[0],...lp[0],-hb);p.closePath();return p;
+}
+// EW fill polygon: tbf=top bow fn, bbf=bottom bow fn, vb=vertical connector bow
+function ewStrip(tp,bp,tbf,bbf,vb){
+  const p=new Path2D();p.moveTo(...tp[0]);
+  for(let s=0;s<tp.length-1;s++)arcP(p,...tp[s],...tp[s+1],tbf(s));
+  arcP(p,...tp[tp.length-1],...bp[bp.length-1],vb);
+  for(let s=bp.length-1;s>0;s--)arcP(p,...bp[s],...bp[s-1],-bbf(s-1));
+  arcP(p,...bp[0],...tp[0],-vb);p.closePath();return p;
+}
+function clip(ctx,b,fn){ctx.save();ctx.beginPath();ctx.rect(b.x,b.y,b.w,b.h);ctx.clip();fn();ctx.restore();}
+function xb(b,W,H){return{x:b.x-W,y:b.y-H,w:b.w+2*W,h:b.h+2*H};}
+// Inset grid bbox: offset by one grid step so boundary connectors sit inside the clip
+// NS: inset Y — top/bottom connectors visible; EW: inset X — left/right connectors visible
+function gbNS(b,V,H){const iy=Math.max(H/2,Math.ceil(Math.max(V,1)/(H/2))*(H/2));return{x:b.x,y:b.y+iy,w:b.w,h:Math.max(H,b.h-2*iy)};}
+function gbEW(b,V,W){const ix=Math.max(W/2,Math.ceil(Math.max(V,1)/(W/2))*(W/2));return{x:b.x+ix,y:b.y,w:Math.max(W,b.w-2*ix),h:b.h};}
+// Full X+Y check — valid because inset grid keeps connectors inside clip
+function arcOK(lp,rp,V,b){
+  const lx=Math.min(...lp.map(([x])=>x)),rx=Math.max(...rp.map(([x])=>x));
+  const y0=lp[0][1],yN=lp[lp.length-1][1];
+  return lx-V>=b.x && rx+V<=b.x+b.w && y0-V>=b.y && yN+V<=b.y+b.h;
+}
+function arcOKew(tp,bp,V,b){
+  const ty=Math.min(...tp.map(([,y])=>y)),by2=Math.max(...bp.map(([,y])=>y));
+  const x0=tp[0][0],xN=tp[tp.length-1][0];
+  return ty-V>=b.y && by2+V<=b.y+b.h && x0-V>=b.x && xN+V<=b.x+b.w;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PATTERN RENDERERS  (spec-patterns)
+// ═══════════════════════════════════════════════════════════════════
+
+// 1. Offset Dots — straight lines, no arc bow
+function rDots(ctx,b,p){
+  const{W,H,C1,C2,D,C3,showLines:sL,showCoords:sC,axis}=p;
+  clip(ctx,b,()=>{
+    if(axis==='NS'){
+      const{dots,vc}=buildNS(b,W,H);
+      for(let ci=0;ci<vc.length-1;ci++){
+        const lp=cPts(dots,vc[ci]),rp=cPts(dots,vc[ci+1]);if(lp.length<2||rp.length<2)continue;
+        if(!arcOK(lp,rp,0,b))continue;
+        const path=new Path2D();path.moveTo(...lp[0]);lp.slice(1).forEach(q=>path.lineTo(...q));
+        [...rp].reverse().forEach(q=>path.lineTo(...q));path.closePath();
+        ctx.fillStyle=ci%2?C2:C1;ctx.fill(path);
+      }
+      if(sL){ctx.strokeStyle='#0009';ctx.lineWidth=.5;
+        for(const c of vc)for(let r=0;r<dots.length-1;r++){const lp=cPts(dots,c),rp=cPts(dots,c);if(!arcOK(lp,rp,0,b))continue;if(c<dots[r].length&&c<dots[r+1].length){ctx.beginPath();ctx.moveTo(...dots[r][c]);ctx.lineTo(...dots[r+1][c]);ctx.stroke();}}
+        for(let r=0;r<dots.length;r++)for(let i=0;i<vc.length-1;i++){const lp=cPts(dots,vc[i]),rp=cPts(dots,vc[i+1]);if(!arcOK(lp,rp,0,b))continue;const cl=vc[i],cr=vc[i+1];if(cl<dots[r].length&&cr<dots[r].length){ctx.beginPath();ctx.moveTo(...dots[r][cl]);ctx.lineTo(...dots[r][cr]);ctx.stroke();}}
+      }
+      dcNS(ctx,dots,vc,W,H,D,0,C3,(lp,rp)=>arcOK(lp,rp,0,b));if(sC)cdNS(ctx,dots,vc);
+    }else{
+      const{dots,vr,nc}=buildEW(b,W,H);
+      for(let ri=0;ri<vr.length-1;ri++){
+        const tp=rPts(dots,vr[ri]),bp=rPts(dots,vr[ri+1]);if(tp.length<2||bp.length<2)continue;
+        if(!arcOKew(tp,bp,0,b))continue;
+        const path=new Path2D();path.moveTo(...tp[0]);tp.slice(1).forEach(q=>path.lineTo(...q));
+        [...bp].reverse().forEach(q=>path.lineTo(...q));path.closePath();
+        ctx.fillStyle=ri%2?C2:C1;ctx.fill(path);
+      }
+      if(sL){ctx.strokeStyle='#0009';ctx.lineWidth=.5;
+        for(let ci=0;ci<nc;ci++)for(let ri=0;ri<vr.length-1;ri++){const rt=vr[ri],rb=vr[ri+1];const tp=rPts(dots,rt),bp=rPts(dots,rb);if(!arcOKew(tp,bp,0,b))continue;if(rt<dots[ci].length&&rb<dots[ci].length){ctx.beginPath();ctx.moveTo(...dots[ci][rt]);ctx.lineTo(...dots[ci][rb]);ctx.stroke();}}
+        for(let ri=0;ri<vr.length;ri++){const row=vr[ri];const y=dots[0]?.[row]?.[1]??-1;if(y-0<b.y||y+0>b.y+b.h)continue;for(let ci=0;ci<nc-1;ci++)if(row<dots[ci].length&&row<dots[ci+1].length){ctx.beginPath();ctx.moveTo(...dots[ci][row]);ctx.lineTo(...dots[ci+1][row]);ctx.stroke();}}
+      }
+      dcEW(ctx,dots,vr,W,H,D,0,C3,(tp,bp)=>arcOKew(tp,bp,0,b));if(sC)cdEW(ctx,dots,vr);
+    }
+  });
+}
+
+// 2. New Offsets — seg%2 alternation, strip%2 horizontal bow
+function rNewOff(ctx,b,p){
+  const{W,H,C1,C2,D,C3,V=0,showLines:sL,showCoords:sC,axis}=p;
+  const bf=s=>s%2===0?V:-V;
+  clip(ctx,b,()=>{
+    if(axis==='NS'){
+      const{dots,vc}=buildNS(gbNS(b,V,H),W,H);
+      for(let ci=0;ci<vc.length-1;ci++){
+        const lp=cPts(dots,vc[ci]),rp=cPts(dots,vc[ci+1]);if(lp.length<2||rp.length<2)continue;
+        if(!arcOK(lp,rp,V,b))continue;
+        ctx.fillStyle=ci%2?C2:C1;ctx.fill(nsStrip(lp,rp,bf,bf,ci%2===0?V:-V));
+      }
+      if(sL){ctx.strokeStyle='#0009';ctx.lineWidth=.5;
+        for(let ci=0;ci<vc.length;ci++){const col=vc[ci];const lp=cPts(dots,col);if(Math.min(...lp.map(([x])=>x))-V<b.x||Math.max(...lp.map(([x])=>x))+V>b.x+b.w)continue;for(let r=0;r<dots.length-1;r++)if(col<dots[r].length&&col<dots[r+1].length)arcL(ctx,...dots[r][col],...dots[r+1][col],r%2===0?V:-V);}
+        const vs=new Set();for(let i=0;i<vc.length-1;i++){const lp=cPts(dots,vc[i]),rp=cPts(dots,vc[i+1]);if(lp.length>=2&&rp.length>=2&&arcOK(lp,rp,V,b))vs.add(i);}
+        for(let r=0;r<dots.length;r++){if(!vc.length||vc[0]>=dots[r].length)continue;const ry=dots[r][vc[0]][1];if(ry-V<b.y||ry+V>b.y+b.h)continue;for(let i=0;i<vc.length-1;i++){if(!vs.has(i))continue;const cl=vc[i],cr=vc[i+1];if(cl<dots[r].length&&cr<dots[r].length)arcL(ctx,...dots[r][cl],...dots[r][cr],i%2===0?V:-V);}}
+      }
+      dcNS(ctx,dots,vc,W,H,D,V,C3,(lp,rp)=>arcOK(lp,rp,V,b));if(sC)cdNS(ctx,dots,vc);
+    }else{
+      const{dots,vr,nc}=buildEW(gbEW(b,V,W),W,H);
+      for(let ri=0;ri<vr.length-1;ri++){
+        const tp=rPts(dots,vr[ri]),bp=rPts(dots,vr[ri+1]);if(tp.length<2||bp.length<2)continue;
+        if(!arcOKew(tp,bp,V,b))continue;
+        ctx.fillStyle=ri%2?C2:C1;ctx.fill(ewStrip(tp,bp,bf,bf,ri%2===0?V:-V));
+      }
+      if(sL){ctx.strokeStyle='#0009';ctx.lineWidth=.5;
+        for(let ri=0;ri<vr.length;ri++){const row=vr[ri];const tp=rPts(dots,row);if(Math.min(...tp.map(([,y])=>y))-V<b.y||Math.max(...tp.map(([,y])=>y))+V>b.y+b.h)continue;for(let ci=0;ci<nc-1;ci++)if(row<dots[ci].length&&row<dots[ci+1].length)arcL(ctx,...dots[ci][row],...dots[ci+1][row],ci%2===0?V:-V);}
+        const vsE=new Set();for(let ri=0;ri<vr.length-1;ri++){const tp=rPts(dots,vr[ri]),bp=rPts(dots,vr[ri+1]);if(tp.length>=2&&bp.length>=2&&arcOKew(tp,bp,V,b))vsE.add(ri);}
+        for(let ci=0;ci<nc;ci++){for(let ri=0;ri<vr.length-1;ri++){if(!vsE.has(ri))continue;const rt=vr[ri],rb=vr[ri+1];if(rt<dots[ci].length&&rb<dots[ci].length){const tp=rPts(dots,rt);const x=tp[0][0];if(x-V<b.x||x+V>b.x+b.w)continue;arcL(ctx,...dots[ci][rt],...dots[ci][rb],ri%2===0?V:-V);}}}
+      }
+      dcEW(ctx,dots,vr,W,H,D,V,C3,(tp,bp)=>arcOKew(tp,bp,V,b));if(sC)cdEW(ctx,dots,vr);
+    }
+  });
+}
+
+// 3. Scallop 1 — column-constant bow (bead chain / overlapping bubbles)
+function rSc1(ctx,b,p){
+  const{W,H,C1,C2,D,C3,V=0,showLines:sL,showCoords:sC,axis}=p;
+  clip(ctx,b,()=>{
+    if(axis==='NS'){
+      const{dots,vc}=buildNS(gbNS(b,V,H),W,H);
+      for(let ci=0;ci<vc.length-1;ci++){
+        const cl=vc[ci],cr=vc[ci+1],lp=cPts(dots,cl),rp=cPts(dots,cr);if(lp.length<2||rp.length<2)continue;
+        if(!arcOK(lp,rp,V,b))continue;
+        const bl=cl%2===0?V:-V,br=cr%2===0?V:-V;
+        ctx.fillStyle=ci%2?C2:C1;ctx.fill(nsStrip(lp,rp,_=>bl,_=>br,bl));
+      }
+      if(sL){ctx.strokeStyle='#0009';ctx.lineWidth=.5;
+        for(let ci=0;ci<vc.length;ci++){const col=vc[ci];const lp=cPts(dots,col);if(Math.min(...lp.map(([x])=>x))-V<b.x||Math.max(...lp.map(([x])=>x))+V>b.x+b.w)continue;for(let r=0;r<dots.length-1;r++)if(col<dots[r].length&&col<dots[r+1].length)arcL(ctx,...dots[r][col],...dots[r+1][col],ci%2===0?V:-V);}
+        const vs=new Set();for(let i=0;i<vc.length-1;i++){const lp=cPts(dots,vc[i]),rp=cPts(dots,vc[i+1]);if(lp.length>=2&&rp.length>=2&&arcOK(lp,rp,V,b))vs.add(i);}
+        for(let r=0;r<dots.length;r++){if(!vc.length||vc[0]>=dots[r].length)continue;const ry=dots[r][vc[0]][1];if(ry-V<b.y||ry+V>b.y+b.h)continue;for(let i=0;i<vc.length-1;i++){if(!vs.has(i))continue;const cl=vc[i],cr=vc[i+1];if(cl<dots[r].length&&cr<dots[r].length)arcL(ctx,...dots[r][cl],...dots[r][cr],i%2===0?V:-V);}}
+      }
+      dcNS(ctx,dots,vc,W,H,D,V,C3,(lp,rp)=>arcOK(lp,rp,V,b));if(sC)cdNS(ctx,dots,vc);
+    }else{
+      const{dots,vr,nc}=buildEW(gbEW(b,V,W),W,H);
+      for(let ri=0;ri<vr.length-1;ri++){
+        const rt=vr[ri],rb=vr[ri+1],tp=rPts(dots,rt),bp=rPts(dots,rb);if(tp.length<2||bp.length<2)continue;
+        if(!arcOKew(tp,bp,V,b))continue;
+        const bt=rt%2===0?V:-V,bb=rb%2===0?V:-V;
+        ctx.fillStyle=ri%2?C2:C1;ctx.fill(ewStrip(tp,bp,_=>bt,_=>bb,bt));
+      }
+      if(sL){ctx.strokeStyle='#0009';ctx.lineWidth=.5;
+        for(let ri=0;ri<vr.length;ri++){const row=vr[ri];const tp=rPts(dots,row);if(Math.min(...tp.map(([,y])=>y))-V<b.y||Math.max(...tp.map(([,y])=>y))+V>b.y+b.h)continue;for(let ci=0;ci<nc-1;ci++)if(row<dots[ci].length&&row<dots[ci+1].length)arcL(ctx,...dots[ci][row],...dots[ci+1][row],ri%2===0?V:-V);}
+        const vsE=new Set();for(let ri=0;ri<vr.length-1;ri++){const tp=rPts(dots,vr[ri]),bp=rPts(dots,vr[ri+1]);if(tp.length>=2&&bp.length>=2&&arcOKew(tp,bp,V,b))vsE.add(ri);}
+        for(let ci=0;ci<nc;ci++){for(let ri=0;ri<vr.length-1;ri++){if(!vsE.has(ri))continue;const rt=vr[ri],rb=vr[ri+1];if(rt<dots[ci].length&&rb<dots[ci].length){const tp=rPts(dots,rt);const x=tp[0][0];if(x-V<b.x||x+V>b.x+b.w)continue;arcL(ctx,...dots[ci][rt],...dots[ci][rb],ri%2===0?V:-V);}}}
+      }
+      dcEW(ctx,dots,vr,W,H,D,V,C3,(tp,bp)=>arcOKew(tp,bp,V,b));if(sC)cdEW(ctx,dots,vr);
+    }
+  });
+}
+
+// 4. Scallop 2 — uniform +V (fish scale / flowing ribbon)
+function rSc2(ctx,b,p){
+  const{W,H,C1,C2,D,C3,V=0,showLines:sL,showCoords:sC,axis}=p;
+  clip(ctx,b,()=>{
+    if(axis==='NS'){
+      const{dots,vc}=buildNS(gbNS(b,V,H),W,H);
+      for(let ci=0;ci<vc.length-1;ci++){
+        const lp=cPts(dots,vc[ci]),rp=cPts(dots,vc[ci+1]);if(lp.length<2||rp.length<2)continue;
+        if(!arcOK(lp,rp,V,b))continue;
+        ctx.fillStyle=ci%2?C2:C1;ctx.fill(nsStrip(lp,rp,_=>V,_=>V,V));
+      }
+      if(sL){ctx.strokeStyle='#0009';ctx.lineWidth=.5;
+        for(let ci=0;ci<vc.length;ci++){const col=vc[ci];const lp=cPts(dots,col);if(Math.min(...lp.map(([x])=>x))-V<b.x||Math.max(...lp.map(([x])=>x))+V>b.x+b.w)continue;for(let r=0;r<dots.length-1;r++)if(col<dots[r].length&&col<dots[r+1].length)arcL(ctx,...dots[r][col],...dots[r+1][col],V);}
+        const vs=new Set();for(let i=0;i<vc.length-1;i++){const lp=cPts(dots,vc[i]),rp=cPts(dots,vc[i+1]);if(lp.length>=2&&rp.length>=2&&arcOK(lp,rp,V,b))vs.add(i);}
+        for(let r=0;r<dots.length;r++){if(!vc.length||vc[0]>=dots[r].length)continue;const ry=dots[r][vc[0]][1];if(ry-V<b.y||ry+V>b.y+b.h)continue;for(let i=0;i<vc.length-1;i++){if(!vs.has(i))continue;const cl=vc[i],cr=vc[i+1];if(cl<dots[r].length&&cr<dots[r].length)arcL(ctx,...dots[r][cl],...dots[r][cr],V);}}
+      }
+      dcNS(ctx,dots,vc,W,H,D,V,C3,(lp,rp)=>arcOK(lp,rp,V,b));if(sC)cdNS(ctx,dots,vc);
+    }else{
+      const{dots,vr,nc}=buildEW(gbEW(b,V,W),W,H);
+      for(let ri=0;ri<vr.length-1;ri++){
+        const tp=rPts(dots,vr[ri]),bp=rPts(dots,vr[ri+1]);if(tp.length<2||bp.length<2)continue;
+        if(!arcOKew(tp,bp,V,b))continue;
+        ctx.fillStyle=ri%2?C2:C1;ctx.fill(ewStrip(tp,bp,_=>V,_=>V,V));
+      }
+      if(sL){ctx.strokeStyle='#0009';ctx.lineWidth=.5;
+        for(let ri=0;ri<vr.length;ri++){const row=vr[ri];const tp=rPts(dots,row);if(Math.min(...tp.map(([,y])=>y))-V<b.y||Math.max(...tp.map(([,y])=>y))+V>b.y+b.h)continue;for(let ci=0;ci<nc-1;ci++)if(row<dots[ci].length&&row<dots[ci+1].length)arcL(ctx,...dots[ci][row],...dots[ci+1][row],V);}
+        const vsE=new Set();for(let ri=0;ri<vr.length-1;ri++){const tp=rPts(dots,vr[ri]),bp=rPts(dots,vr[ri+1]);if(tp.length>=2&&bp.length>=2&&arcOKew(tp,bp,V,b))vsE.add(ri);}
+        for(let ci=0;ci<nc;ci++){for(let ri=0;ri<vr.length-1;ri++){if(!vsE.has(ri))continue;const rt=vr[ri],rb=vr[ri+1];if(rt<dots[ci].length&&rb<dots[ci].length){const tp=rPts(dots,rt);const x=tp[0][0];if(x-V<b.x||x+V>b.x+b.w)continue;arcL(ctx,...dots[ci][rt],...dots[ci][rb],V);}}}
+      }
+      dcEW(ctx,dots,vr,W,H,D,V,C3,(tp,bp)=>arcOKew(tp,bp,V,b));if(sC)cdEW(ctx,dots,vr);
+    }
+  });
+}
+
+// 5. Scallop 3 — seg%2 alternation, straight horizontal connectors (pagoda)
+function rSc3(ctx,b,p){
+  const{W,H,C1,C2,D,C3,V=0,showLines:sL,showCoords:sC,axis}=p;
+  const bf=s=>s%2===0?V:-V;
+  clip(ctx,b,()=>{
+    if(axis==='NS'){
+      const{dots,vc}=buildNS(gbNS(b,V,H),W,H);
+      for(let ci=0;ci<vc.length-1;ci++){
+        const lp=cPts(dots,vc[ci]),rp=cPts(dots,vc[ci+1]);if(lp.length<2||rp.length<2)continue;
+        if(!arcOK(lp,rp,V,b))continue;
+        ctx.fillStyle=ci%2?C2:C1;ctx.fill(nsStrip(lp,rp,bf,bf,0));
+      }
+      if(sL){ctx.strokeStyle='#0009';ctx.lineWidth=.5;
+        for(let ci=0;ci<vc.length;ci++){const col=vc[ci];const lp=cPts(dots,col);if(Math.min(...lp.map(([x])=>x))-V<b.x||Math.max(...lp.map(([x])=>x))+V>b.x+b.w)continue;for(let r=0;r<dots.length-1;r++)if(col<dots[r].length&&col<dots[r+1].length)arcL(ctx,...dots[r][col],...dots[r+1][col],bf(r));}
+        const vs=new Set();for(let i=0;i<vc.length-1;i++){const lp=cPts(dots,vc[i]),rp=cPts(dots,vc[i+1]);if(lp.length>=2&&rp.length>=2&&arcOK(lp,rp,V,b))vs.add(i);}
+        for(let r=0;r<dots.length;r++){if(!vc.length||vc[0]>=dots[r].length)continue;const ry=dots[r][vc[0]][1];if(ry-V<b.y||ry+V>b.y+b.h)continue;for(let i=0;i<vc.length-1;i++){if(!vs.has(i))continue;const cl=vc[i],cr=vc[i+1];if(cl<dots[r].length&&cr<dots[r].length)arcL(ctx,...dots[r][cl],...dots[r][cr],0);}}
+      }
+      dcNS(ctx,dots,vc,W,H,D,V,C3,(lp,rp)=>arcOK(lp,rp,V,b));if(sC)cdNS(ctx,dots,vc);
+    }else{
+      const{dots,vr,nc}=buildEW(gbEW(b,V,W),W,H);
+      for(let ri=0;ri<vr.length-1;ri++){
+        const tp=rPts(dots,vr[ri]),bp=rPts(dots,vr[ri+1]);if(tp.length<2||bp.length<2)continue;
+        if(!arcOKew(tp,bp,V,b))continue;
+        ctx.fillStyle=ri%2?C2:C1;ctx.fill(ewStrip(tp,bp,bf,bf,0));
+      }
+      if(sL){ctx.strokeStyle='#0009';ctx.lineWidth=.5;
+        for(let ri=0;ri<vr.length;ri++){const row=vr[ri];const tp=rPts(dots,row);if(Math.min(...tp.map(([,y])=>y))-V<b.y||Math.max(...tp.map(([,y])=>y))+V>b.y+b.h)continue;for(let ci=0;ci<nc-1;ci++)if(row<dots[ci].length&&row<dots[ci+1].length)arcL(ctx,...dots[ci][row],...dots[ci+1][row],bf(ri));}
+        const vsE=new Set();for(let ri=0;ri<vr.length-1;ri++){const tp=rPts(dots,vr[ri]),bp=rPts(dots,vr[ri+1]);if(tp.length>=2&&bp.length>=2&&arcOKew(tp,bp,V,b))vsE.add(ri);}
+        for(let ci=0;ci<nc;ci++){for(let ri=0;ri<vr.length-1;ri++){if(!vsE.has(ri))continue;const rt=vr[ri],rb=vr[ri+1];if(rt<dots[ci].length&&rb<dots[ci].length){const tp=rPts(dots,rt);const x=tp[0][0];if(x-V<b.x||x+V>b.x+b.w)continue;arcL(ctx,...dots[ci][rt],...dots[ci][rb],0);}}}
+      }
+      dcEW(ctx,dots,vr,W,H,D,V,C3,(tp,bp)=>arcOKew(tp,bp,V,b));if(sC)cdEW(ctx,dots,vr);
+    }
+  });
+}
+
+// 6. Triangle Fill — straight-line triangle tiling
+function rTri(ctx,b,p){
+  const{W,H,C1,C2,C3,showDots,D=0,Cdot='#ffffff',axis}=p;
+  const HS=H/2,WS=W/2;
+  const dots=[];  // collect [cx,cy,inradius] for center dots
+  const tri=(ax,ay,bx,by,ex,ey,c)=>{
+    ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.lineTo(ex,ey);ctx.closePath();ctx.fill();
+    if(D>0){
+      const tcx=(ax+bx+ex)/3,tcy=(ay+by+ey)/3;
+      const sa=Math.sqrt((bx-ex)**2+(by-ey)**2);
+      const sb=Math.sqrt((ex-ax)**2+(ey-ay)**2);
+      const sc=Math.sqrt((ax-bx)**2+(ay-by)**2);
+      const area=Math.abs((bx-ax)*(ey-ay)-(ex-ax)*(by-ay))/2;
+      const ir=(sa+sb+sc)>0?area/((sa+sb+sc)/2):0;
+      dots.push([tcx,tcy,ir]);
+    }
+  };
+  clip(ctx,b,()=>{
+    if(axis==='NS'){
+      const dx=(r,i)=>b.x+i*W+(r%2?WS:0),dy=r=>b.y+r*HS;
+      const nr=Math.floor(b.h/HS)+1,ne=Math.floor(b.w/W)+1,no=ne-1;
+      for(let r=0;r<nr-1;r++){
+        const y0=dy(r),y1=dy(r+1);
+        if(r%2===0){
+          for(let i=0;i<ne-1;i++)tri(dx(r,i),y0,dx(r,i+1),y0,dx(r+1,i),y1,C1);
+          for(let i=0;i<no-1;i++)tri(dx(r+1,i),y1,dx(r,i+1),y0,dx(r+1,i+1),y1,C2);
+        }else{
+          for(let i=0;i<no;i++)tri(dx(r+1,i),y1,dx(r,i),y0,dx(r+1,i+1),y1,C2);
+          for(let i=0;i<no-1;i++)tri(dx(r,i),y0,dx(r,i+1),y0,dx(r+1,i+1),y1,C1);
+        }
+      }
+      for(let r=0;r<nr-2;r+=2)tri(b.x,dy(r),b.x+WS,dy(r+1),b.x,dy(r+2),C3);
+      const xre=b.x+(ne-1)*W,xro=b.x+(no-1)*W+WS;
+      for(let r=0;r<nr-2;r+=2)tri(xre,dy(r),xro,dy(r+1),xre,dy(r+2),C3);
+      if(showDots){ctx.fillStyle='#1a1a40';for(let r=0;r<nr;r++)for(let i=0,n=r%2?no:ne;i<n;i++){ctx.beginPath();ctx.arc(dx(r,i),dy(r),3.5,0,Math.PI*2);ctx.fill();}}
+    }else{
+      const cx=ci=>b.x+ci*WS,cy=(ci,i)=>b.y+i*H+(ci%2?HS:0);
+      const nc=Math.floor(b.w/WS)+1,nd=Math.floor(b.h/H)+1,no=nd-1;
+      for(let ci=0;ci<nc-1;ci++){
+        const xl=cx(ci),xr=cx(ci+1);
+        if(ci%2===0){
+          for(let i=0;i<nd-1;i++)tri(xl,cy(ci,i),xl,cy(ci,i+1),xr,cy(ci+1,i),C1);
+          for(let i=0;i<no-1;i++)tri(xr,cy(ci+1,i),xl,cy(ci,i+1),xr,cy(ci+1,i+1),C2);
+        }else{
+          for(let i=0;i<no;i++)tri(xr,cy(ci+1,i),xl,cy(ci,i),xr,cy(ci+1,i+1),C2);
+          for(let i=0;i<no-1;i++)tri(xl,cy(ci,i),xl,cy(ci,i+1),xr,cy(ci+1,i+1),C1);
+        }
+      }
+      for(let ci=0;ci<nc-2;ci+=2)tri(cx(ci),b.y,cx(ci+1),b.y+HS,cx(ci+2),b.y,C3);
+      const ybe=b.y+(nd-1)*H,ybo=b.y+(no-1)*H+HS;
+      for(let ci=0;ci<nc-2;ci+=2)tri(cx(ci),ybe,cx(ci+1),ybo,cx(ci+2),ybe,C3);
+      if(showDots){ctx.fillStyle='#1a1a40';for(let ci=0;ci<nc;ci++)for(let i=0,n=ci%2?no:nd;i<n;i++){ctx.beginPath();ctx.arc(cx(ci),cy(ci,i),3.5,0,Math.PI*2);ctx.fill();}}
+    }
+    // Center dots: inradius / D placed at each triangle centroid
+    if(D>0){
+      ctx.fillStyle=Cdot;
+      for(const[tcx,tcy,ir] of dots){const r=Math.max(1,ir/D);ctx.beginPath();ctx.arc(tcx,tcy,r,0,Math.PI*2);ctx.fill();}
+    }
+  });
+}
+
+// 7. Sine Offsets — cosine wave boundaries, polyline approximation
+function rSine(ctx,b,p){
+  const{W,H,C1,C2,D,C3,showLines:sL,showCoords:sC,axis}=p;
+  const NS=32;
+  clip(ctx,b,()=>{
+    if(axis==='NS'){
+      const cxs=[];for(let x=b.x;x<=b.x+b.w+1;x+=W)cxs.push(x);
+      // Only complete lens vertices within bbox (crossings every H/2)
+      const lastVertY=b.y+Math.floor(b.h/(H/2))*(H/2);
+      const dys=[];for(let y=b.y;y<=lastVertY+0.5;y+=H/2)dys.push(y);
+      const cfn=(xc,ci,y)=>xc+(W/2)*Math.cos(2*Math.PI*(y-b.y)/H+Math.PI*ci);
+      const bpts=(xc,ci)=>{
+        const pts=[];
+        for(let sg=0;sg<dys.length-1;sg++){const y0=dys[sg],y1=dys[sg+1];for(let i=0;i<NS;i++){const t=i/NS,y=y0+t*(y1-y0);pts.push([cfn(xc,ci,y),y]);}}
+        pts.push([cfn(xc,ci,dys[dys.length-1]),dys[dys.length-1]]);return pts;
+      };
+      for(let ci=0;ci<cxs.length-1;ci++){
+        if(cxs[ci]-W/2<b.x||cxs[ci+1]+W/2>b.x+b.w)continue;
+        const lp=bpts(cxs[ci],ci),rp=bpts(cxs[ci+1],ci+1);
+        ctx.fillStyle=ci%2?C2:C1;
+        const path=new Path2D();path.moveTo(...lp[0]);lp.slice(1).forEach(q=>path.lineTo(...q));
+        path.lineTo(...rp[rp.length-1]);for(let i=rp.length-2;i>=0;i--)path.lineTo(...rp[i]);
+        path.closePath();ctx.fill(path);
+      }
+      if(sL){ctx.strokeStyle='#0009';ctx.lineWidth=.5;for(let ci=0;ci<cxs.length;ci++){if(cxs[ci]-W/2<b.x||cxs[ci]+W/2>b.x+b.w)continue;const pts=bpts(cxs[ci],ci);const path=new Path2D();path.moveTo(...pts[0]);pts.slice(1).forEach(q=>path.lineTo(...q));ctx.stroke(path);}}
+      if(D>0){const r=Math.max(1,(H/4)*.7/D);ctx.fillStyle=C3;
+        for(let ci=0;ci<cxs.length-1;ci++){
+          if(cxs[ci]-W/2<b.x||cxs[ci+1]+W/2>b.x+b.w)continue;
+          for(let ri=0;ri<dys.length-1;ri++){ctx.beginPath();ctx.arc((cxs[ci]+cxs[ci+1])/2,(dys[ri]+dys[ri+1])/2,r,0,Math.PI*2);ctx.fill();}
+        }}
+      if(sC){ctx.fillStyle='#000';for(const xc of cxs)for(const y of dys){ctx.beginPath();ctx.arc(xc,y,2,0,Math.PI*2);ctx.fill();}}
+    }else{
+      const rys=[];for(let y=b.y;y<=b.y+b.h+1;y+=H)rys.push(y);
+      // Only complete lens vertices within bbox (crossings every W/2)
+      const lastVertX=b.x+Math.floor(b.w/(W/2))*(W/2);
+      const dxs=[];for(let x=b.x;x<=lastVertX+0.5;x+=W/2)dxs.push(x);
+      const rfn=(yr,ri,x)=>yr+(H/2)*Math.cos(2*Math.PI*(x-b.x)/W+Math.PI*ri);
+      const bpts=(yr,ri)=>{
+        const pts=[];
+        for(let sg=0;sg<dxs.length-1;sg++){const x0=dxs[sg],x1=dxs[sg+1];for(let i=0;i<NS;i++){const t=i/NS,x=x0+t*(x1-x0);pts.push([x,rfn(yr,ri,x)]);}}
+        pts.push([dxs[dxs.length-1],rfn(yr,ri,dxs[dxs.length-1])]);return pts;
+      };
+      for(let ri=0;ri<rys.length-1;ri++){
+        if(rys[ri]-H/2<b.y||rys[ri+1]+H/2>b.y+b.h)continue;
+        const tp=bpts(rys[ri],ri),bp=bpts(rys[ri+1],ri+1);
+        ctx.fillStyle=ri%2?C2:C1;
+        const path=new Path2D();path.moveTo(...tp[0]);tp.slice(1).forEach(q=>path.lineTo(...q));
+        path.lineTo(...bp[bp.length-1]);for(let i=bp.length-2;i>=0;i--)path.lineTo(...bp[i]);
+        path.closePath();ctx.fill(path);
+      }
+      if(sL){ctx.strokeStyle='#0009';ctx.lineWidth=.5;for(let ri=0;ri<rys.length;ri++){if(rys[ri]-H/2<b.y||rys[ri]+H/2>b.y+b.h)continue;const pts=bpts(rys[ri],ri);const path=new Path2D();path.moveTo(...pts[0]);pts.slice(1).forEach(q=>path.lineTo(...q));ctx.stroke(path);}}
+      if(D>0){const r=Math.max(1,(W/4)*.7/D);ctx.fillStyle=C3;
+        for(let ri=0;ri<rys.length-1;ri++){
+          if(rys[ri]-H/2<b.y||rys[ri+1]+H/2>b.y+b.h)continue;
+          for(let di=0;di<dxs.length-1;di++){ctx.beginPath();ctx.arc((dxs[di]+dxs[di+1])/2,(rys[ri]+rys[ri+1])/2,r,0,Math.PI*2);ctx.fill();}
+        }}
+      if(sC){ctx.fillStyle='#000';for(const yr of rys)for(const x of dxs){ctx.beginPath();ctx.arc(x,yr,2,0,Math.PI*2);ctx.fill();}}
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// HEX FILL — shared utilities and renderers  (spec-patterns §8–9)
+// ═══════════════════════════════════════════════════════════════════
+function hexCenters(bbox,W){
+  const rowStep=W*Math.sqrt(3)/2;
+  const centers=[];
+  let row=0,y=bbox.y-W;
+  while(y<=bbox.y+bbox.h+W){
+    const x0=bbox.x-W+(row%2?W/2:0);
+    let col=0,x=x0;
+    while(x<=bbox.x+bbox.w+W){centers.push({x,y,row,col});x+=W;col++;}
+    y+=rowStep;row++;
+  }
+  return centers;
+}
+function hexOK(cx,cy,R,b){
+  for(let k=0;k<6;k++){
+    const a=k*Math.PI/3,vx=cx+R*Math.sin(a),vy=cy-R*Math.cos(a);
+    if(vx<b.x||vx>b.x+b.w||vy<b.y||vy>b.y+b.h)return false;
+  }
+  return true;
+}
+function drawHex(ctx,b,W,colorFn,colors,D,Cdot,showEdges){
+  const R=W/Math.sqrt(3);
+  clip(ctx,b,()=>{
+    const ok=hexCenters(b,W).filter(({x,y})=>hexOK(x,y,R,b));
+    ok.forEach(({x,y,row,col})=>{
+      ctx.fillStyle=colors[colorFn(row,col)];
+      ctx.beginPath();
+      for(let k=0;k<6;k++){const a=k*Math.PI/3,vx=x+R*Math.sin(a),vy=y-R*Math.cos(a);k===0?ctx.moveTo(vx,vy):ctx.lineTo(vx,vy);}
+      ctx.closePath();ctx.fill();
+      if(showEdges){ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=0.7;ctx.stroke();}
+    });
+    if(D>0){const dr=Math.max(1,(W/2)/D);ctx.fillStyle=Cdot;ok.forEach(({x,y})=>{ctx.beginPath();ctx.arc(x,y,dr,0,Math.PI*2);ctx.fill();});}
+  });
+}
+// 8. Hex Fill ×2 — two-color row+col alternation
+function rHex2(ctx,b,p){
+  const{W,C1,C2,D=2,Cdot='#1a1a40',showEdges=false}=p;
+  drawHex(ctx,b,W,(row,col)=>(row+col)%2,[C1,C2],D,Cdot,showEdges);
+}
+// 9. Hex Fill ×3 — proper 3-coloring via axial (q+2r) mod 3
+function rHex3(ctx,b,p){
+  const{W,C1,C2,C3,D=2,Cdot='#1a1a40',showEdges=false}=p;
+  const cf=(row,col)=>{const q=col-Math.floor((row-(row&1))/2);return((q+2*row)%3+3)%3;};
+  drawHex(ctx,b,W,cf,[C1,C2,C3],D,Cdot,showEdges);
+}
+// ═══════════════════════════════════════════════════════════════════
+const AP=(hasV)=>[
+  {k:'W',l:'Cell width',t:'range',min:20,max:100,step:2},
+  {k:'H',l:'Cell height',t:'range',min:20,max:100,step:2},
+  {k:'D',l:'Dot size  (0 = none)',t:'range',min:0,max:6,step:1},
+  {k:'padding',l:'Padding',t:'range',min:0,max:80,step:2},
+  {k:'axis',l:'Axis',t:'axis'},
+  {k:'C1',l:'Color 1',t:'color'},
+  {k:'C2',l:'Color 2',t:'color'},
+  {k:'C3',l:'Dot color',t:'color'},
+  ...(hasV?[{k:'V',l:'Arc depth',t:'range',min:0,max:40,step:1}]:[]),
+  {k:'showLines',l:'Show lines',t:'toggle'},
+  {k:'showCoords',l:'Show grid points',t:'toggle'},
+];
+const DEF=(x={})=>({W:54,H:54,padding:20,axis:'NS',C1:'#4169e1',C2:'#87ceeb',D:2,C3:'#ffffff',showLines:false,showCoords:false,...x});
+
+const PATTERNS=[
+  // ── Geometric Patterns ──
+  {id:'offset-dots',    name:'Offset Dots',         desc:'Straight-line zigzag fills — the foundation',         color:'#4169e1',fn:rDots,   params:AP(false),defaults:DEF()},
+  {id:'triangle-fill',  name:'Triangle Fill',        desc:'Two-color triangle tiling with edge accent',          color:'#cc2200',fn:rTri,
+    params:[
+      {k:'W',l:'Cell width',t:'range',min:20,max:100,step:2},
+      {k:'H',l:'Cell height',t:'range',min:20,max:100,step:2},
+      {k:'padding',l:'Padding',t:'range',min:0,max:80,step:2},
+      {k:'axis',l:'Axis',t:'axis'},
+      {k:'C1',l:'Down / right color',t:'color'},
+      {k:'C2',l:'Up / left color',t:'color'},
+      {k:'C3',l:'Edge triangle color',t:'color'},
+      {k:'Cdot',l:'Dot color',t:'color'},
+      {k:'D',l:'Dot size  (0 = none)',t:'range',min:0,max:6,step:1},
+      {k:'showDots',l:'Show grid dots',t:'toggle'},
+    ],
+    defaults:{W:54,H:54,padding:20,axis:'NS',C1:'#4169e1',C2:'#87ceeb',C3:'#cc2200',D:2,Cdot:'#ffffff',showDots:true}
+  },
+  {id:'sine-offsets',   name:'Sine Offsets',         desc:'Interlocking lens shapes from cosine wave',           color:'#00aa88',fn:rSine,   params:AP(false),defaults:DEF({C1:'#00aa88',C2:'#aaeedd'})},
+  {id:'hex-fill-2',     name:'Hex Fill \xd72',        desc:'Honeycomb tiling — two-color alternation',            color:'#cc8800',fn:rHex2,
+    params:[
+      {k:'W',   l:'Cell size',          t:'range',min:30,max:80,step:2},
+      {k:'padding',l:'Padding',         t:'range',min:0, max:60,step:2},
+      {k:'C1',  l:'Color 1',            t:'color'},
+      {k:'C2',  l:'Color 2',            t:'color'},
+      {k:'Cdot',l:'Dot color',          t:'color'},
+      {k:'D',   l:'Dot size (0 = none)',t:'range',min:0, max:5, step:1},
+      {k:'showEdges',l:'Show edges',    t:'toggle'},
+    ],
+    defaults:{W:52,padding:20,C1:'#4169e1',C2:'#87ceeb',D:2,Cdot:'#1a1a40',showEdges:false}
+  },
+  {id:'hex-fill-3',     name:'Hex Fill \xd73',        desc:'Honeycomb tiling — proper 3-coloring',                color:'#cc8800',fn:rHex3,
+    params:[
+      {k:'W',   l:'Cell size',          t:'range',min:30,max:80,step:2},
+      {k:'padding',l:'Padding',         t:'range',min:0, max:60,step:2},
+      {k:'C1',  l:'Color 1',            t:'color'},
+      {k:'C2',  l:'Color 2',            t:'color'},
+      {k:'C3',  l:'Color 3',            t:'color'},
+      {k:'Cdot',l:'Dot color',          t:'color'},
+      {k:'D',   l:'Dot size (0 = none)',t:'range',min:0, max:5, step:1},
+      {k:'showEdges',l:'Show edges',    t:'toggle'},
+    ],
+    defaults:{W:52,padding:20,C1:'#4169e1',C2:'#87ceeb',C3:'#ffffff',D:2,Cdot:'#1a1a40',showEdges:false}
+  },
+  // ── Arc Patterns ──
+  {id:'curved-offsets', name:'Curved Offsets',       desc:'Alternating arcs — symmetric zigzag scallop',         color:'#7744dd',fn:rNewOff, params:AP(true), defaults:DEF({V:10,C1:'#7744dd',C2:'#ccaaff'})},
+  {id:'scallop-1',      name:'Scallop — Bead Chain', desc:'Column-phase bow: pinch + barrel strips',             color:'#cc3388',fn:rSc1,    params:AP(true), defaults:DEF({V:10,C1:'#cc3388',C2:'#ffaacc'})},
+  {id:'scallop-2',      name:'Scallop — Fish Scale', desc:'Uniform bow: cascading ribbon / roof tile',           color:'#cc6600',fn:rSc2,    params:AP(true), defaults:DEF({V:12,C1:'#cc6600',C2:'#ffcc77'})},
+  {id:'scallop-3',      name:'Scallop — Pagoda',     desc:'Row-band alternation: stacked crescent',              color:'#008855',fn:rSc3,    params:AP(true), defaults:DEF({V:10,C1:'#008855',C2:'#66ddaa'})},
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// STATE & PERSISTENCE  (spec-dots: output modes)
+// ═══════════════════════════════════════════════════════════════════
+let ST={screen:'select',pi:0,params:{}};
+let mainCV=null,resizeFn=null;
+
+function loadP(pi){
+  try{const s=localStorage.getItem('odps-'+PATTERNS[pi].id);if(s)return JSON.parse(s);}catch(e){}
+  return{...PATTERNS[pi].defaults};
+}
+function saveP(pi,params){try{localStorage.setItem('odps-'+PATTERNS[pi].id,JSON.stringify(params));}catch(e){}}
+
+function exportPreset(pi,params){
+  const blob=new Blob([JSON.stringify({patternId:PATTERNS[pi].id,params},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=PATTERNS[pi].id+'-preset.json';a.click();URL.revokeObjectURL(a.href);
+}
+function importPreset(pi,cb){
+  const inp=document.createElement('input');inp.type='file';inp.accept='.json';
+  inp.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(d.params)cb(d.params);}catch(err){alert('Invalid preset file');}};r.readAsText(f);};
+  inp.click();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CANVAS RENDERING
+// ═══════════════════════════════════════════════════════════════════
+function draw(cv,pi,params){
+  const pat=PATTERNS[pi],ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  const pad=params.padding||0;
+  try{pat.fn(ctx,{x:pad,y:pad,w:W-pad*2,h:H-pad*2},params);}catch(e){console.error(e);}
+}
+
+function openInWindow(pi,params,w,h,autoPrint){
+  const pat=PATTERNS[pi];
+  const ec=document.createElement('canvas');ec.width=w;ec.height=h;
+  draw(ec,pi,params);
+  const url=ec.toDataURL('image/png');
+  const win=window.open('');
+  if(!win){alert('Please allow popups for this page.');return;}
+  const ps=autoPrint?'<script>window.onload=()=>{window.print();}<\/script>':'';
+  win.document.write(`<!DOCTYPE html><html><head><title>${pat.name} — Offset Dot Studio</title><style>*{margin:0;padding:0;}body{background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;}img{max-width:100%;max-height:100vh;}@media print{@page{size:${autoPrint?'letter':'landscape'};margin:0;}body{background:#fff;min-height:0;}img{width:100vw;height:100vh;max-width:none;max-height:none;object-fit:contain;}}</style></head><body><img src="${url}">${ps}</body></html>`);
+  win.document.close();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// UI: PARAMS SCREEN
+// ═══════════════════════════════════════════════════════════════════
+function mkCtrl(spec,val,onUpdate,onRebuild){
+  const row=document.createElement('div');row.className='prow';
+  if(spec.t!=='toggle'){
+    const lbl=document.createElement('span');lbl.className='plbl';lbl.textContent=spec.l;row.appendChild(lbl);
+  }
+  if(spec.t==='range'){
+    const sr=document.createElement('div');sr.className='srow';
+    const sl=document.createElement('input');sl.type='range';sl.min=spec.min;sl.max=spec.max;sl.step=spec.step||1;sl.value=val;
+    const vsp=document.createElement('span');vsp.className='sval';vsp.textContent=val;
+    sl.oninput=()=>{vsp.textContent=sl.value;onUpdate(Number(sl.value));};
+    sr.appendChild(sl);sr.appendChild(vsp);row.appendChild(sr);
+  }else if(spec.t==='axis'){
+    const ar=document.createElement('div');ar.className='axrow';
+    [['NS','Vertical'],['EW','Horizontal']].forEach(([ax,label])=>{
+      const btn=document.createElement('button');btn.className='axbtn'+(val===ax?' on':'');btn.textContent=label;
+      btn.onclick=()=>{onUpdate(ax);onRebuild();};ar.appendChild(btn);
+    });
+    row.appendChild(ar);
+  }else if(spec.t==='toggle'){
+    const tr=document.createElement('div');tr.className='togrow';
+    const lbl=document.createElement('span');lbl.className='plbl';lbl.style.marginBottom='0';lbl.textContent=spec.l;
+    const tog=document.createElement('button');tog.className='tog'+(val?' on':'');
+    tog.onclick=()=>{onUpdate(!val);onRebuild();};
+    tr.appendChild(lbl);tr.appendChild(tog);row.appendChild(tr);
+  }
+  return row;
+}
+
+// Renders a group of consecutive color params on a single row
+function mkColorRow(specs,params){
+  const row=document.createElement('div');row.className='prow';
+  const fr=document.createElement('div');fr.style.cssText='display:flex;gap:6px;';
+  let fillIdx=0;
+  specs.forEach(spec=>{
+    const cell=document.createElement('div');
+    cell.style.cssText='display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;';
+    const lbl=document.createElement('span');lbl.className='plbl';
+    lbl.style.cssText='white-space:nowrap;text-align:center;';
+    // Short label: Dot for any dot-color param, C1/C2/C3 for fill colors
+    const isDot=spec.k==='Cdot'||spec.l.toLowerCase().includes('dot');
+    lbl.textContent=isDot?'Dot':'C'+(++fillIdx);
+    const ci=document.createElement('input');ci.type='color';ci.value=params[spec.k]||'#ffffff';
+    ci.style.cssText='width:100%;height:26px;border:1px solid var(--border2);border-radius:var(--r);background:none;cursor:pointer;padding:2px;display:block;';
+    ci.oninput=()=>{params[spec.k]=ci.value;saveP(ST.pi,params);if(mainCV)draw(mainCV,ST.pi,params);};
+    cell.appendChild(lbl);cell.appendChild(ci);fr.appendChild(cell);
+  });
+  row.appendChild(fr);return row;
+}
+
+function buildParams(){
+  const pat=PATTERNS[ST.pi];
+  const el=document.createElement('div');el.id='par';
+
+  // ── Left panel ──
+  const panel=document.createElement('div');panel.id='panel';
+
+  // ── Gallery selector with hover preview ──
+  const phdr=document.createElement('div');phdr.id='phdr';
+  const galLbl=document.createElement('span');galLbl.className='plbl';galLbl.textContent='Gallery';
+
+  // Floating preview (appended to #par so it overlays the canvas)
+  const preview=document.createElement('div');preview.id='gal-preview';
+  const prevCv=document.createElement('canvas');prevCv.width=268;prevCv.height=168;
+  preview.appendChild(prevCv);
+  let prevTimer=null;
+
+  function showPreview(idx,itemEl){
+    clearTimeout(prevTimer);
+    const tp=PATTERNS[idx];
+    const ctx=prevCv.getContext('2d');
+    ctx.clearRect(0,0,268,168);ctx.fillStyle='#fff';ctx.fillRect(0,0,268,168);
+    try{tp.fn(ctx,{x:5,y:5,w:258,h:158},{...tp.defaults,W:Math.min(tp.defaults.W,38),H:Math.min(tp.defaults.H,38),padding:0});}catch(e){}
+    // Align preview vertically with hovered item
+    const iRect=itemEl.getBoundingClientRect(),eRect=el.getBoundingClientRect();
+    const top=Math.max(14,Math.min(iRect.top-eRect.top-60,el.clientHeight-190));
+    preview.style.top=top+'px';
+    preview.style.display='block';
+  }
+  function hidePreview(){prevTimer=setTimeout(()=>{preview.style.display='none';},80);}
+
+  // Custom dropdown trigger
+  const galDrop=document.createElement('div');galDrop.className='gal-drop';
+  const galTrig=document.createElement('button');galTrig.className='gal-trigger';
+  const trigName=document.createElement('span');trigName.textContent=PATTERNS[ST.pi].name;
+  const trigArr=document.createElement('span');trigArr.textContent='▾';
+  galTrig.appendChild(trigName);galTrig.appendChild(trigArr);
+
+  // Dropdown list
+  const galList=document.createElement('div');galList.className='gal-list';
+  PATTERNS.forEach((p,i)=>{
+    const item=document.createElement('div');item.className='gal-item'+(i===ST.pi?' active':'');
+    const dot=document.createElement('span');dot.className='gal-item-dot';dot.style.background=p.color;
+    const nm=document.createElement('span');nm.textContent=p.name;
+    item.appendChild(dot);item.appendChild(nm);
+    item.addEventListener('mouseenter',()=>showPreview(i,item));
+    item.addEventListener('mouseleave',hidePreview);
+    item.onclick=()=>{
+      preview.style.display='none';galList.classList.remove('open');galTrig.classList.remove('open');
+      if(i!==ST.pi){ST.pi=i;ST.params=loadP(i);renderApp();}
+    };
+    galList.appendChild(item);
+  });
+
+  // Toggle dropdown on trigger click
+  galTrig.onclick=(e)=>{
+    e.stopPropagation();
+    const opening=!galList.classList.contains('open');
+    galList.classList.toggle('open');galTrig.classList.toggle('open',opening);
+    if(!opening)preview.style.display='none';
+  };
+  // Close on outside click
+  const closeGal=(e)=>{
+    if(!galDrop.contains(e.target)){
+      galList.classList.remove('open');galTrig.classList.remove('open');
+      preview.style.display='none';document.removeEventListener('click',closeGal);
+    }
+  };
+  document.addEventListener('click',closeGal);
+
+  galDrop.appendChild(galTrig);galDrop.appendChild(galList);
+
+  // Label row: "Gallery" left, guide link right
+  const lblRow=document.createElement('div');lblRow.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;';
+  const guideBtn=document.createElement('button');guideBtn.textContent='ODS Guide ↗';
+  guideBtn.style.cssText='background:none;border:none;color:var(--accent);font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:600;cursor:pointer;padding:0;letter-spacing:.3px;transition:opacity .15s;';
+  guideBtn.onmouseover=()=>guideBtn.style.opacity='.7';
+  guideBtn.onmouseout=()=>guideBtn.style.opacity='1';
+  guideBtn.onclick=()=>window.open('offset-dot-studio-guide.html','_blank');
+  lblRow.appendChild(galLbl);lblRow.appendChild(guideBtn);
+
+  phdr.appendChild(lblRow);
+  phdr.appendChild(galDrop);
+  panel.appendChild(phdr);
+
+  const pbody=document.createElement('div');pbody.id='pbody';
+
+  // ── Param controls (inner div, rebuilt on param change) ──
+  const pcontrols=document.createElement('div');
+
+  function rebuild(){
+    pcontrols.innerHTML='';
+    let i=0;
+    while(i<pat.params.length){
+      const spec=pat.params[i];
+      if(spec.t==='color'){
+        // Collect all consecutive color params into one row
+        const batch=[];
+        while(i<pat.params.length&&pat.params[i].t==='color'){batch.push(pat.params[i]);i++;}
+        pcontrols.appendChild(mkColorRow(batch,ST.params));
+      }else{
+        pcontrols.appendChild(mkCtrl(spec,ST.params[spec.k],
+          nv=>{ST.params[spec.k]=nv;saveP(ST.pi,ST.params);if(mainCV)draw(mainCV,ST.pi,ST.params);},
+          ()=>rebuild()
+        ));
+        i++;
+      }
+    }
+  }
+  rebuild();
+  pbody.appendChild(pcontrols);
+
+  // ── Separator ──
+  const sep=document.createElement('hr');
+  sep.style.cssText='border:none;border-top:1px solid var(--border);margin:8px 0 14px;';
+  pbody.appendChild(sep);
+
+  // ── Action buttons (inside pbody, scroll with params) ──
+  const openBtn=document.createElement('button');openBtn.className='abtn abtn-p';openBtn.textContent='↗  Open in new window';
+  openBtn.onclick=()=>openInWindow(ST.pi,ST.params,1920,1080,false);
+  pbody.appendChild(openBtn);
+
+  const printBtn=document.createElement('button');printBtn.className='abtn abtn-s';printBtn.style.marginTop='8px';printBtn.textContent='⎙  Print / save PDF';
+  printBtn.onclick=()=>openInWindow(ST.pi,ST.params,816,1056,true);
+  pbody.appendChild(printBtn);
+
+  const expBtn=document.createElement('button');expBtn.className='abtn abtn-s';expBtn.style.marginTop='8px';expBtn.textContent='↓  Export preset';
+  expBtn.onclick=()=>exportPreset(ST.pi,ST.params);
+  pbody.appendChild(expBtn);
+
+  const impBtn=document.createElement('button');impBtn.className='abtn abtn-s';impBtn.style.marginTop='8px';impBtn.textContent='↑  Import preset';
+  impBtn.onclick=()=>importPreset(ST.pi,np=>{ST.params={...pat.defaults,...np};saveP(ST.pi,ST.params);renderApp();});
+  pbody.appendChild(impBtn);
+
+  const rstBtn=document.createElement('button');rstBtn.className='abtn abtn-s';rstBtn.style.marginTop='8px';rstBtn.textContent='↺  Reset to defaults';
+  rstBtn.onclick=()=>{ST.params={...pat.defaults};saveP(ST.pi,ST.params);renderApp();};
+  rstBtn.style.marginBottom='16px';
+  pbody.appendChild(rstBtn);
+
+  const vlab=document.createElement('div');
+  vlab.style.cssText='font-size:10px;opacity:.3;text-align:center;padding:0 0 8px;font-family:var(--mono);';
+  vlab.textContent='v1.0';
+  pbody.appendChild(vlab);
+
+  panel.appendChild(pbody);
+
+  // ── Canvas area ──
+  const carea=document.createElement('div');carea.id='carea';
+  mainCV=document.createElement('canvas');mainCV.id='cv';
+  carea.appendChild(mainCV);
+  el.appendChild(panel);
+  el.appendChild(carea);
+  el.appendChild(preview);  // floating hover preview overlays canvas area
+
+  // Size canvas to fill area, redraw on resize
+  function sizeAndDraw(){
+    const w=carea.clientWidth,h=carea.clientHeight;
+    if(w>0&&h>0){mainCV.width=w;mainCV.height=h;draw(mainCV,ST.pi,ST.params);}
+  }
+  setTimeout(sizeAndDraw,20);
+  resizeFn=()=>sizeAndDraw();
+  window.addEventListener('resize',resizeFn);
+
+  return el;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// APP ROOT
+// ═══════════════════════════════════════════════════════════════════
+function renderApp(){
+  if(resizeFn){window.removeEventListener('resize',resizeFn);resizeFn=null;}
+  mainCV=null;
+  if(!ST.params||!Object.keys(ST.params).length)ST.params=loadP(ST.pi);
+  const app=document.getElementById('app');
+  app.innerHTML='';
+  app.appendChild(buildParams());
+}
+
+renderApp();
+</script>
+</body>
+</html>

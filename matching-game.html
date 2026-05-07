@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Matching Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+button { touch-action: manipulation; cursor: pointer; }
+a { touch-action: manipulation; }
+:root {
+  --bg:      #0c0c12;
+  --surface: #14141e;
+  --card:    #1c1c2a;
+  --border:  #2a2a3c;
+  --border2: #3a3a52;
+  --text:    #f0eff8;
+  --muted:   #7a7994;
+  --dim:     #4a4968;
+  --accent:  #c8c0ff;
+  --r-sm: 6px; --r-md: 10px; --r-lg: 16px; --r-xl: 22px;
+  --game-font: 'Comic Sans MS', 'Chalkboard SE', 'Fredoka One', 'Nunito', cursive;
+}
+body {
+  font-family: var(--game-font);
+  background: var(--bg); color: var(--text);
+  min-height: 100%; line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* ── Layout ── */
+.container { max-width: 860px; margin: 0 auto; padding: 0 2rem; }
+
+/* ── Header ── */
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 3rem 0 2.5rem;
+  position: relative; overflow: hidden;
+}
+.header-grid {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: .04;
+  background-image: linear-gradient(var(--border2) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--border2) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.header-inner {
+  position: relative; z-index: 1;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 2rem; flex-wrap: wrap;
+}
+.eyebrow {
+  font-size: 11px; font-weight: 500; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: .65rem;
+}
+h1 {
+  font-family: var(--game-font);
+  font-size: clamp(2.6rem, 7vw, 4.8rem);
+  font-weight: 800; line-height: 1; letter-spacing: -.01em;
+  color: #ffffff;
+}
+h1 span { color: #ffffff; -webkit-text-stroke: 0; }
+.tagline { margin-top: .75rem; font-size: .9rem; color: var(--muted); font-weight: 300; font-style: italic; }
+.tile-strip { display: flex; gap: 5px; flex-wrap: wrap; align-self: flex-end; padding-bottom: 4px; }
+.tile-chip {
+  width: 26px; height: 26px; border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+}
+.tile-chip svg { width: 58%; height: 58%; }
+
+/* ── Tab bar ── */
+.tab-bar {
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+  background: var(--bg);
+}
+.tab-bar-inner {
+  display: flex; overflow-x: auto; scrollbar-width: none;
+}
+.tab-bar-inner::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex-shrink: 0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 500; color: var(--muted);
+  background: none; border: none;
+  padding: .9rem 1.2rem;
+  border-bottom: 2px solid transparent;
+  cursor: pointer; letter-spacing: .01em;
+  transition: color .15s, border-color .15s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--text); border-bottom-color: var(--accent); }
+
+/* ── Tab panels ── */
+.tab-panel { display: none; padding: 3.5rem 0 5rem; }
+.tab-panel.active { display: block; animation: fadeIn .18s ease both; }
+#tab-play.active { animation: none; padding: .75rem 0; }
+#board-wrap { position: relative; width: 100%; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── Typography ── */
+h2 {
+  font-family: var(--game-font);
+  font-size: 1.5rem; font-weight: 800;
+  letter-spacing: -.01em; margin-bottom: 1.75rem;
+}
+h3 {
+  font-family: var(--game-font);
+  font-size: 1rem; font-weight: 700;
+  letter-spacing: .01em; margin-bottom: .5rem;
+}
+
+/* ── Overview cards ── */
+.spec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1px; background: var(--border);
+  border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden;
+}
+.spec-card { background: var(--surface); padding: 1.4rem 1.5rem; transition: background .15s; }
+.spec-card:hover { background: var(--card); }
+.spec-icon {
+  width: 32px; height: 32px; background: var(--card);
+  border: 1px solid var(--border2); border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center; margin-bottom: .85rem;
+}
+.spec-icon svg { width: 16px; height: 16px; }
+.spec-card p { font-size: 13.5px; color: var(--muted); line-height: 1.6; }
+.spec-card strong { color: var(--text); font-weight: 500; }
+
+/* ── Rules ── */
+.rules-list { list-style: none; }
+.rules-list li {
+  display: flex; gap: 1.25rem; align-items: flex-start;
+  padding: 1.1rem 0; border-bottom: 1px solid var(--border);
+}
+.rules-list li:last-child { border-bottom: none; }
+.rule-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px; font-weight: 800; color: var(--dim);
+  min-width: 28px; padding-top: 3px; letter-spacing: .08em;
+}
+.rule-body { font-size: 14.5px; color: var(--muted); }
+.rule-body strong { color: var(--text); font-weight: 500; }
+
+/* ── Tiles tab ── */
+.tiles-intro { font-size: 14px; color: var(--muted); margin-bottom: 2rem; line-height: 1.7; }
+.tiles-intro strong { color: var(--text); font-weight: 500; }
+.legend-section { margin-bottom: 2.5rem; }
+.legend-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .12em;
+  color: var(--dim); font-weight: 500; margin-bottom: .85rem;
+}
+.color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.color-tile {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: .65rem .85rem;
+}
+.color-dot { width: 22px; height: 22px; border-radius: 4px; flex-shrink: 0; }
+.color-name { font-size: 13px; color: var(--muted); }
+.shape-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.shape-tile {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: .65rem .85rem;
+}
+.shape-preview {
+  width: 28px; height: 28px; border-radius: 5px;
+  background: #3a3a52; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.shape-preview svg { width: 65%; height: 65%; }
+.shape-name { font-size: 13px; color: var(--muted); }
+.combo-callout {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 1.25rem 1.5rem;
+  display: flex; align-items: center; gap: 1.25rem; margin-top: .5rem;
+}
+.combo-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 2.5rem; font-weight: 800; color: var(--accent); flex-shrink: 0;
+}
+.combo-desc { font-size: 13.5px; color: var(--muted); }
+.combo-desc strong { color: var(--text); font-weight: 500; }
+
+/* ── Spec table ── */
+.tech-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.tech-table tr { border-bottom: 1px solid var(--border); }
+.tech-table tr:last-child { border-bottom: none; }
+.tech-table td { padding: .85rem .25rem; vertical-align: top; }
+.tech-table td:first-child { color: var(--muted); width: 175px; padding-right: 1rem; }
+.tech-table td:last-child { color: var(--text); }
+.tag {
+  display: inline-block; background: var(--card);
+  border: 1px solid var(--border2); border-radius: 4px;
+  padding: 1px 8px; font-size: 11px; color: var(--dim); font-family: monospace;
+}
+
+/* ── Game shell ── */
+.game-shell {
+  background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r-xl); overflow: hidden;
+}
+.game-toolbar {
+  display: flex; align-items: center; gap: 8px;
+  padding: .7rem 1rem; border-bottom: 1px solid var(--border); background: var(--bg);
+}
+.toolbar-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--border2); }
+.toolbar-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 700; color: var(--muted);
+  margin-left: 4px; letter-spacing: .04em;
+}
+.game-body { padding: 1.75rem; }
+
+/* Config */
+.cfg-row { display: flex; align-items: center; gap: 14px; margin-bottom: 1.25rem; }
+.cfg-row label {
+  font-size: 12px; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--muted); width: 56px; flex-shrink: 0;
+}
+.cfg-row input[type=range] {
+  flex: 1; appearance: none; height: 4px;
+  background: var(--border2); border-radius: 2px; outline: none; cursor: pointer;
+}
+.cfg-row input[type=range]::-webkit-slider-thumb {
+  appearance: none; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--text); border: 3px solid var(--bg); cursor: pointer;
+}
+.cfg-row input[type=range]::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--text); border: none; cursor: pointer;
+}
+.val-badge {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 800; color: var(--text);
+  min-width: 32px; text-align: right;
+}
+.cfg-divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+#preview-canvas { display: block; border-radius: var(--r-md); width: 100%; }
+.cfg-stats { display: flex; gap: 8px; margin: 1.1rem 0; }
+.cfg-stat {
+  flex: 1; background: var(--bg);
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  padding: .65rem .8rem; text-align: center;
+}
+.cfg-stat .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--dim); margin-bottom: 3px; }
+.cfg-stat .num { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--text); }
+.warn-text { font-size: 12px; color: #e8721a; min-height: 16px; margin-bottom: .75rem; }
+.btn-launch {
+  width: 100%; padding: .8rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px; font-weight: 800; letter-spacing: .06em;
+  background: var(--text); color: var(--bg);
+  border: none; border-radius: var(--r-md);
+  cursor: pointer; transition: opacity .15s, transform .1s;
+}
+.btn-launch:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
+.btn-launch:active:not(:disabled) { transform: scale(.98); }
+.btn-launch:disabled { opacity: .3; cursor: not-allowed; }
+
+/* ── Horizontal scroll wheel controls ── */
+.board-header-row { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.board-header-row h2 { margin-bottom: 0; }
+.board-wheels { display: flex; gap: 1rem; }
+.wheel-h-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.wheel-h-label { font-size: 10px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-weight: 500; }
+.wheel-h-drum {
+  display: flex; flex-direction: row; align-items: stretch;
+  height: 44px; border-radius: 22px;
+  background: var(--bg); border: 1px solid var(--border2);
+  overflow: hidden; cursor: ew-resize; user-select: none;
+}
+.wheel-h-arrow { width: 28px; display: flex; align-items: center; justify-content: center; color: var(--dim); font-size: 10px; cursor: pointer; transition: color .15s; flex-shrink: 0; }
+.wheel-h-arrow:hover { color: var(--text); }
+.wheel-h-far { width: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--border2); font-weight: 500; flex-shrink: 0; }
+.wheel-h-adj { width: 28px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--dim); font-weight: 700; flex-shrink: 0; }
+.wheel-h-cur { width: 48px; display: flex; align-items: center; justify-content: center; font-family: var(--game-font); font-size: 26px; font-weight: 800; color: var(--text); background: var(--surface); border-left: 1px solid var(--border2); border-right: 1px solid var(--border2); flex-shrink: 0; }
+
+/* HUD */
+.game-hud { display: flex; gap: 10px; margin-bottom: .75rem; }
+.hud-stat {
+  flex: 1; background: var(--bg);
+  border: 1px solid var(--border); border-radius: var(--r-md); padding: .55rem .85rem;
+}
+.hud-stat .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--dim); }
+.hud-stat .val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--text); }
+
+/* Board */
+#fx-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+#board { display: grid; gap: 6px; margin: 0 auto; width: fit-content; }
+.tile { aspect-ratio: 1; border-radius: var(--r-md); cursor: pointer; perspective: 700px; position: relative; z-index: 1; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+.tile-inner {
+  width: 100%; height: 100%; position: relative;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+}
+.tile.flipped .tile-inner { -webkit-transform: rotateY(180deg); transform: rotateY(180deg); }
+.tile-back, .tile-front {
+  position: absolute; width: 100%; height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+}
+.tile-back { background: var(--card); border: 1px solid var(--border2); }
+.tile-front { -webkit-transform: rotateY(180deg); transform: rotateY(180deg); }
+.tile.spiraling .tile-inner { animation: deathSpiral .65s cubic-bezier(.4,0,.8,1) forwards; }
+@keyframes deathSpiral {
+  0%   { transform: rotateY(180deg) scale(1) rotate(0deg); opacity: 1; }
+  25%  { transform: rotateY(180deg) scale(1.15) rotate(40deg); opacity: 1; }
+  60%  { transform: rotateY(720deg) scale(0.4) rotate(260deg); opacity: .7; }
+  100% { transform: rotateY(1080deg) scale(0) rotate(540deg); opacity: 0; }
+}
+.tile.gone { visibility: hidden; pointer-events: none; }
+.game-footer { display: flex; gap: 8px; margin-top: .75rem; align-items: center; flex-wrap: wrap; }
+.board-size-label { flex: 1; text-align: center; font-size: 11px; color: var(--muted); white-space: nowrap; min-width: 70px; }
+.btn-ghost { padding: .45rem 1rem; font-size: 12px; font-weight: 500; letter-spacing: .04em; background: transparent; color: var(--muted); border: 1px solid var(--border2); border-radius: var(--r-md); cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+.btn-ghost:hover:not(:disabled) { background: var(--card); color: var(--text); }
+.btn-ghost:disabled { opacity: .3; cursor: not-allowed; }
+.btn-ghost.hint-active { border-color: var(--accent); color: var(--accent); }
+#win-banner { display: none; }
+#win-overlay {
+  display: none; position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 25;
+  flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  background: rgba(6,6,16,0.85);
+}
+#win-overlay.show { display: flex; }
+.win-headline {
+  font-family: var(--game-font);
+  font-size: clamp(3rem, 10vw, 5.5rem);
+  font-weight: 800; color: #fff; text-align: center;
+  text-shadow: 0 0 24px #FFD700, 0 0 50px #FF6B35, 0 0 80px #C0BBFF;
+  animation: winPop .55s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.win-stats-line {
+  font-size: .95rem; color: var(--muted); text-align: center;
+  animation: winFade .4s ease .3s both;
+}
+.win-btns { display: flex; gap: 10px; margin-top: 6px; animation: winFade .4s ease .5s both; }
+.win-btns button {
+  padding: .5rem 1.2rem; font-size: 13px; font-weight: 500;
+  background: rgba(255,255,255,.12); color: #fff;
+  border: 1px solid rgba(255,255,255,.3); border-radius: var(--r-md);
+  cursor: pointer; transition: background .15s;
+}
+.win-btns button:hover { background: rgba(255,255,255,.22); }
+@keyframes winPop  { 0%{transform:scale(.2);opacity:0} 100%{transform:scale(1);opacity:1} }
+@keyframes winFade { 0%{opacity:0;transform:translateY(8px)} 100%{opacity:1;transform:none} }
+.hidden { display: none !important; }
+
+/* ── Footer ── */
+footer {
+  border-top: 1px solid var(--border); padding: 1.75rem 0;
+  text-align: center; font-size: 12px; color: var(--dim);
+}
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="header-grid"></div>
+  <div class="container header-inner">
+    <div>
+      <p class="eyebrow">v1.0 &nbsp;·&nbsp; Browser game &nbsp;·&nbsp; Single player</p>
+      <h1>Matching Game</h1>
+      <p class="tagline">Flip tiles. Find pairs. Watch them vanish in a blaze of glory.</p>
+    </div>
+    <div class="tile-strip">
+      <div class="tile-chip" style="background:#C0392B"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="white"/></svg></div>
+      <div class="tile-chip" style="background:#D35400"><svg viewBox="0 0 100 100"><polygon points="50,12 88,85 12,85" fill="white"/></svg></div>
+      <div class="tile-chip" style="background:#B7950B"><svg viewBox="0 0 100 100"><rect x="15" y="15" width="70" height="70" rx="4" fill="white"/></svg></div>
+      <div class="tile-chip" style="background:#1E8449"><svg viewBox="0 0 100 100"><polygon points="50,12 88,50 50,88 12,50" fill="white"/></svg></div>
+      <div class="tile-chip" style="background:#1A5276"><svg viewBox="0 0 100 100"><polygon points="50,10 61,39 92,39 68,59 77,89 50,70 23,89 32,59 8,39 39,39" fill="white"/></svg></div>
+      <div class="tile-chip" style="background:#EC7FA5"><svg viewBox="0 0 100 100"><rect x="15" y="40" width="70" height="20" rx="3" fill="white"/><rect x="40" y="15" width="20" height="70" rx="3" fill="white"/></svg></div>
+      <div class="tile-chip" style="background:#F0A585"><svg viewBox="0 0 100 100"><polygon points="50,10 84,30 84,70 50,90 16,70 16,30" fill="white"/></svg></div>
+      <div class="tile-chip" style="background:#D4C35A"><svg viewBox="0 0 100 100"><path d="M50,65 C50,65 18,50 18,30 C18,18 30,12 50,28 C70,12 82,18 82,30 C82,50 50,65 50,65Z" fill="white"/></svg></div>
+      <div class="tile-chip" style="background:#5EC9A0"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="none" stroke="white" stroke-width="13"/></svg></div>
+      <div class="tile-chip" style="background:#5BA8DC"><svg viewBox="0 0 100 100"><polygon points="15,35 60,35 60,18 90,50 60,82 60,65 15,65" fill="white"/></svg></div>
+    </div>
+  </div>
+</header>
+
+<!-- ── Tab bar ── -->
+<div class="tab-bar">
+  <div class="container">
+    <div class="tab-bar-inner">
+      <button class="tab-btn active" data-tab="overview">Overview</button>
+      <button class="tab-btn" data-tab="rules">Rules</button>
+      <button class="tab-btn" data-tab="tiles">Tiles</button>
+      <button class="tab-btn" data-tab="spec">Spec</button>
+      <button class="tab-btn" data-tab="board">Board</button>
+      <button class="tab-btn" data-tab="play">Play</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Tab: Overview ── -->
+<div class="tab-panel active" id="tab-overview">
+  <div class="container">
+    <h2>What is Matching Game?</h2>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <div class="spec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+        <h3>Configurable board</h3>
+        <p>Set any <strong>width (2–12)</strong> and <strong>height (2–12)</strong> using scroll wheels. Up to 144 tiles (12×12) with 15 shapes × 10 colors = 150 unique pairs.</p>
+      </div>
+      <div class="spec-card">
+        <div class="spec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+        <h3>Timed scoring</h3>
+        <p>The clock starts on your <strong>first flip</strong>. Finish faster and in fewer moves for a better result — time and moves shown on the win screen.</p>
+      </div>
+      <div class="spec-card">
+        <div class="spec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg></div>
+        <h3>Fireworks + vortex</h3>
+        <p>Matching a pair triggers a <strong>death-spiral vortex</strong> and an <strong>explosive fireworks burst</strong> in the tile's own color palette.</p>
+      </div>
+      <div class="spec-card">
+        <div class="spec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg></div>
+        <h3>Hint system</h3>
+        <p><strong>Hint</strong> briefly flips the matching tile to reveal it. <strong>Hint mode</strong> does this automatically after every first flip. Both are available in the game footer.</p>
+      </div>
+      <div class="spec-card">
+        <div class="spec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+        <h3>Pure browser</h3>
+        <p>Zero dependencies. <strong>No server, no install, no accounts.</strong> One HTML file that runs offline in any modern browser including iOS Safari.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Tab: Rules ── -->
+<div class="tab-panel" id="tab-rules">
+  <div class="container">
+    <h2>How to play</h2>
+    <ul class="rules-list">
+      <li><span class="rule-num">01</span><span class="rule-body"><strong>Configure the board.</strong> Go to the Board tab. Use the width and height scroll wheels to set the grid size. Hit the <em>Launch game</em> button when ready.</span></li>
+      <li><span class="rule-num">02</span><span class="rule-body"><strong>Flip a tile.</strong> Click any face-down tile to reveal its color and shape. The timer starts on your very first click.</span></li>
+      <li><span class="rule-num">03</span><span class="rule-body"><strong>Flip a second tile.</strong> Click another face-down tile. Each pair of flips counts as one move.</span></li>
+      <li><span class="rule-num">04</span><span class="rule-body"><strong>Match check.</strong> If both tiles share the <strong>same color AND shape</strong> they are a pair — they erupt in fireworks and spiral away, clearing the board permanently.</span></li>
+      <li><span class="rule-num">05</span><span class="rule-body"><strong>No match.</strong> If the tiles differ, both flip face-down again after a short delay. Try to remember their positions for later.</span></li>
+      <li><span class="rule-num">06</span><span class="rule-body"><strong>Hint.</strong> After flipping the first tile, press <em>Hint</em> in the footer to briefly reveal its matching pair. The hint resets after each use so it can be used repeatedly.</span></li>
+      <li><span class="rule-num">07</span><span class="rule-body"><strong>Hint mode.</strong> Toggle <em>Hint mode</em> to automatically reveal the matching tile every time you flip the first tile of a pair. Useful for learning the board.</span></li>
+      <li><span class="rule-num">08</span><span class="rule-body"><strong>Win condition.</strong> Clear all pairs from the board. Your final time and move count are displayed. Press <em>Play again</em> to reshuffle or <em>Change board</em> to adjust the grid size.</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── Tab: Tiles ── -->
+<div class="tab-panel" id="tab-tiles">
+  <div class="container">
+    <h2>Colors &amp; shapes</h2>
+    <p class="tiles-intro">Each tile has a <strong>solid color background</strong> with a <strong>white shape</strong> at 60% surface coverage. The palette pairs each ROYGB primary with its <strong>white-tinted counterpart</strong> — easily distinguishable but clearly related. Colors are randomly selected each game; minimum colors used equals <strong>tiles ÷ 4</strong> (rounded up).</p>
+
+    <div class="legend-section">
+      <div class="legend-label">10 colors — ROYGB primaries + white-tinted pairs</div>
+      <div class="color-grid">
+        <div class="color-tile"><div class="color-dot" style="background:#C0392B"></div><span class="color-name">Red</span></div>
+        <div class="color-tile"><div class="color-dot" style="background:repeating-linear-gradient(-45deg,#C0392B 0,#C0392B 25%,#EC7FA5 25%,#EC7FA5 50%)"></div><span class="color-name">Pink (red+white)</span></div>
+        <div class="color-tile"><div class="color-dot" style="background:#D35400"></div><span class="color-name">Orange</span></div>
+        <div class="color-tile"><div class="color-dot" style="background:repeating-linear-gradient(-45deg,#D35400 0,#D35400 25%,#F0A585 25%,#F0A585 50%)"></div><span class="color-name">Peach (orange+white)</span></div>
+        <div class="color-tile"><div class="color-dot" style="background:#B7950B"></div><span class="color-name">Gold</span></div>
+        <div class="color-tile"><div class="color-dot" style="background:repeating-linear-gradient(-45deg,#B7950B 0,#B7950B 25%,#D4C35A 25%,#D4C35A 50%)"></div><span class="color-name">Straw (gold+white)</span></div>
+        <div class="color-tile"><div class="color-dot" style="background:#1E8449"></div><span class="color-name">Green</span></div>
+        <div class="color-tile"><div class="color-dot" style="background:repeating-linear-gradient(-45deg,#1E8449 0,#1E8449 25%,#5EC9A0 25%,#5EC9A0 50%)"></div><span class="color-name">Mint (green+white)</span></div>
+        <div class="color-tile"><div class="color-dot" style="background:#1A5276"></div><span class="color-name">Blue</span></div>
+        <div class="color-tile"><div class="color-dot" style="background:repeating-linear-gradient(-45deg,#1A5276 0,#1A5276 25%,#5BA8DC 25%,#5BA8DC 50%)"></div><span class="color-name">Sky (blue+white)</span></div>
+      </div>
+    </div>
+
+    <div class="legend-section">
+      <div class="legend-label">15 shapes</div>
+      <div class="shape-grid">
+        <div class="shape-tile"><div class="shape-preview"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="white"/></svg></div><span class="shape-name">Circle</span></div>
+        <div class="shape-tile"><div class="shape-preview"><svg viewBox="0 0 100 100"><rect x="15" y="15" width="70" height="70" rx="4" fill="white"/></svg></div><span class="shape-name">Square</span></div>
+        <div class="shape-tile"><div class="shape-preview"><svg viewBox="0 0 100 100"><polygon points="50,12 88,85 12,85" fill="white"/></svg></div><span class="shape-name">Triangle</span></div>
+        <div class="shape-tile"><div class="shape-preview"><svg viewBox="0 0 100 100"><polygon points="50,10 88,50 50,90 12,50" fill="white"/></svg></div><span class="shape-name">Diamond</span></div>
+        <div class="shape-tile"><div class="shape-preview"><svg viewBox="0 0 100 100"><polygon points="50,10 61,39 92,39 68,59 77,89 50,70 23,89 32,59 8,39 39,39" fill="white"/></svg></div><span class="shape-name">Star</span></div>
+        <div class="shape-tile"><div class="shape-preview"><svg viewBox="0 0 100 100"><rect x="15" y="40" width="70" height="20" rx="3" fill="white"/><rect x="40" y="15" width="20" height="70" rx="3" fill="white"/></svg></div><span class="shape-name">Cross</span></div>
+        <div class="shape-tile"><div class="shape-preview"><svg viewBox="0 0 100 100"><polygon points="50,10 84,30 84,70 50,90 16,70 16,30" fill="white"/></svg></div><span class="shape-name">Hexagon</span></div>
+        <div class="shape-tile"><div class="shape-preview"><svg viewBox="0 0 100 100"><path d="M50,65 C50,65 18,50 18,30 C18,18 30,12 50,28 C70,12 82,18 82,30 C82,50 50,65 50,65Z" fill="white"/></svg></div><span class="shape-name">Heart</span></div>
+        <div class="shape-tile"><div class="shape-preview"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="none" stroke="white" stroke-width="13"/></svg></div><span class="shape-name">Ring</span></div>
+        <div class="shape-tile"><div class="shape-preview"><svg viewBox="0 0 100 100"><polygon points="15,35 60,35 60,18 90,50 60,82 60,65 15,65" fill="white"/></svg></div><span class="shape-name">Arrow</span></div>
+        <div class="shape-tile"><div class="shape-preview"><svg viewBox="0 0 100 100"><polygon points="78,18 60,18 16,50 60,82 78,82 38,50" fill="white"/></svg></div><span class="shape-name">&lt; left</span></div>
+        <div class="shape-tile"><div class="shape-preview"><svg viewBox="0 0 100 100"><polygon points="22,18 40,18 84,50 40,82 22,82 62,50" fill="white"/></svg></div><span class="shape-name">&gt; right</span></div>
+        <div class="shape-tile"><div class="shape-preview"><svg viewBox="0 0 100 100"><polygon points="50,14 88,80 70,80 50,36 30,80 12,80" fill="white"/></svg></div><span class="shape-name">^ caret</span></div>
+        <div class="shape-tile"><div class="shape-preview"><svg viewBox="0 0 100 100"><rect x="15" y="30" width="70" height="16" rx="3" fill="white"/><rect x="15" y="54" width="70" height="16" rx="3" fill="white"/></svg></div><span class="shape-name">= equals</span></div>
+        <div class="shape-tile"><div class="shape-preview"><svg viewBox="0 0 100 100"><path d="M12,42 C22,22 40,22 50,42 C60,62 78,62 88,42 L88,58 C78,78 60,78 50,58 C40,38 22,38 12,58 Z" fill="white"/></svg></div><span class="shape-name">~ tilde</span></div>
+      </div>
+    </div>
+
+    <div class="combo-callout">
+      <div class="combo-num">150</div>
+      <div class="combo-desc"><strong>Maximum unique pairs</strong> — 10 colors × 15 shapes. Supports up to a full 12×12 board (72 pairs). Colors are randomly selected each game; the 5 new shapes (<strong>&lt; &gt; ^ = ?</strong>) extend the pool to cover large grids.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Tab: Spec ── -->
+<div class="tab-panel" id="tab-spec">
+  <div class="container">
+    <h2>Technical specification</h2>
+    <table class="tech-table">
+      <tr><td>Version</td><td>1.4.0</td></tr>
+      <tr><td>Platform</td><td>Any modern browser — Chrome, Firefox, Safari, Edge, iOS Safari</td></tr>
+      <tr><td>Dependencies</td><td>None — pure HTML, CSS, JavaScript</td></tr>
+      <tr><td>Offline capable</td><td>Yes — no network requests required during gameplay</td></tr>
+      <tr><td>Board width</td><td>2 – 12 tiles</td></tr>
+      <tr><td>Board height</td><td>2 – 12 tiles</td></tr>
+      <tr><td>Board controls</td><td>Two horizontal scroll-wheel pickers on the Board tab — click ◀▶ or scroll/swipe to change. Range 2–12 for both axes.</td></tr>
+      <tr><td>Max tiles</td><td>144 &nbsp;(12 × 12)</td></tr>
+      <tr><td>Shapes</td><td>15 — Circle, Square, Triangle, Diamond, Star, Cross, Hexagon, Heart, Ring, Arrow, &lt; &gt; ^ = ~</td></tr>
+      <tr><td>Max unique pairs</td><td>150 &nbsp;(10 colors × 15 shapes) — enough for any board up to 12 × 12</td></tr>
+      <tr><td>Tile face</td><td>Solid color background + white SVG shape at 60% surface coverage</td></tr>
+      <tr><td>Tile back</td><td>Neutral surface with concentric circle motif</td></tr>
+      <tr><td>Color palette</td><td>10 colors: 5 ROYGB primaries — Red, Orange, Gold, Green, Blue — each paired with a white-tinted counterpart — Pink, Peach, Straw, Mint, Sky. Pastels show 4 diagonal stripes of their primary color for easy differentiation</td></tr>
+      <tr><td>Color selection</td><td>Minimum colors per game = tiles ÷ 4 (rounded up). Colors are picked randomly each game from the 10-color pool so the mix varies each play</td></tr>
+      <tr><td>Odd tile count</td><td>When W × H is odd the center tile is removed, keeping the board symmetrical</td></tr>
+      <tr><td>Hint</td><td>Available after flipping the first tile of a turn. Briefly flips the matching tile face-up for 1 second so the player can see it, then flips it back. Resets automatically after each use so it can be used repeatedly</td></tr>
+      <tr><td>Hint mode</td><td>Toggle in the game footer. When on, automatically reveals the matching tile every time the first tile in a pair is flipped — no button press needed. Button shows accent color when active</td></tr>
+      <tr><td>Win animation</td><td>13 fireworks bursts fire from positions across the entire board using all 12 palette colors. 700 ms later a dark overlay fades in over the board with a large bouncy <strong>YOU WIN!</strong> headline (gold/orange/purple glow), move count and time, and Play again / Change board buttons</td></tr>
+      <tr><td>Flip animation</td><td>CSS 3D <span class="tag">rotateY</span>, 300 ms, cubic-bezier easing; <span class="tag">-webkit-</span> prefixed for iOS Safari</td></tr>
+      <tr><td>No-match delay</td><td>1500 ms — tiles remain face-up for 1.5 seconds before flipping back</td></tr>
+      <tr><td>Match animation</td><td>CSS keyframe death-spiral — 3-rotation vortex + scale-to-zero, 650 ms</td></tr>
+      <tr><td>Fireworks</td><td>Canvas particle system — 52 streak/dot particles + 30-point vortex ring per tile per match, in the matched tile's own color palette</td></tr>
+      <tr><td>HUD</td><td>Four counters: <strong>Moves</strong>, <strong>Pairs</strong> (fixed total), <strong>Matched</strong> (found so far), <strong>Remaining</strong></td></tr>
+      <tr><td>Footer</td><td>Play again · Change board · board size label · Hint · Hint mode</td></tr>
+      <tr><td>Scoring</td><td>Move count (integer) + elapsed time (seconds, rounded), displayed on win screen</td></tr>
+      <tr><td>Shuffle algorithm</td><td>Fisher-Yates in-place</td></tr>
+      <tr><td>Font</td><td>Comic Sans MS (Windows/Mac/iOS) → Chalkboard SE (older Mac/iOS) → Fredoka One (Android/web) → Nunito (universal fallback), all loaded via Google Fonts</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ── Tab: Board ── -->
+<div class="tab-panel" id="tab-board">
+  <div class="container">
+    <input type="hidden" id="sl-w" value="4">
+    <input type="hidden" id="sl-h" value="4">
+    <div class="board-header-row">
+      <h2>Board setup</h2>
+      <div class="board-wheels">
+        <div class="wheel-h-wrap">
+          <div class="wheel-h-label">Width</div>
+          <div class="wheel-h-drum" id="drum-w">
+            <div class="wheel-h-arrow" id="darr-w-up">◀</div>
+            <div class="wheel-h-far"  id="dw-far-prev"></div>
+            <div class="wheel-h-adj"  id="dw-adj-prev"></div>
+            <div class="wheel-h-cur"  id="dw-cur">4</div>
+            <div class="wheel-h-adj"  id="dw-adj-next"></div>
+            <div class="wheel-h-far"  id="dw-far-next"></div>
+            <div class="wheel-h-arrow" id="darr-w-dn">▶</div>
+          </div>
+        </div>
+        <div class="wheel-h-wrap">
+          <div class="wheel-h-label">Height</div>
+          <div class="wheel-h-drum" id="drum-h">
+            <div class="wheel-h-arrow" id="darr-h-up">◀</div>
+            <div class="wheel-h-far"  id="dh-far-prev"></div>
+            <div class="wheel-h-adj"  id="dh-adj-prev"></div>
+            <div class="wheel-h-cur"  id="dh-cur">4</div>
+            <div class="wheel-h-adj"  id="dh-adj-next"></div>
+            <div class="wheel-h-far"  id="dh-far-next"></div>
+            <div class="wheel-h-arrow" id="darr-h-dn">▶</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr class="cfg-divider">
+    <canvas id="preview-canvas" height="160"></canvas>
+    <div class="cfg-stats">
+      <div class="cfg-stat"><div class="lbl">Tiles</div><div class="num" id="st-tiles">16</div></div>
+      <div class="cfg-stat"><div class="lbl">Pairs</div><div class="num" id="st-pairs">8</div></div>
+      <div class="cfg-stat"><div class="lbl">Colors</div><div class="num" id="st-colors">—</div></div>
+      <div class="cfg-stat"><div class="lbl">Shapes</div><div class="num" id="st-shapes">—</div></div>
+    </div>
+    <div class="warn-text" id="odd-warn"></div>
+    <button class="btn-launch" id="launch-btn" onclick="launchGame()">Launch game</button>
+  </div>
+</div>
+
+<!-- ── Tab: Play ── -->
+<div class="tab-panel" id="tab-play">
+  <div class="container">
+    <div class="game-hud">
+      <div class="hud-stat"><div class="lbl">Moves</div><div class="val" id="g-moves">0</div></div>
+      <div class="hud-stat"><div class="lbl">Pairs</div><div class="val" id="g-pairs">0</div></div>
+      <div class="hud-stat"><div class="lbl">Matched</div><div class="val" id="g-matched">0</div></div>
+      <div class="hud-stat"><div class="lbl">Remaining</div><div class="val" id="g-left">0</div></div>
+    </div>
+    <div id="board-wrap">
+      <canvas id="fx-canvas"></canvas>
+      <div id="board"></div>
+      <div id="win-overlay">
+        <div class="win-headline">YOU WIN!</div>
+        <div class="win-stats-line" id="win-stats-text"></div>
+        <div class="win-btns">
+          <button onclick="playAgain()">Play again</button>
+          <button onclick="changeBoard()">Change board</button>
+        </div>
+      </div>
+    </div>
+    <div class="game-footer">
+      <button class="btn-ghost" onclick="playAgain()">Play again</button>
+      <button class="btn-ghost" onclick="changeBoard()">Change board</button>
+      <span class="board-size-label" id="board-size-label"></span>
+      <button class="btn-ghost" id="btn-hint" onclick="useHint()" disabled>Hint</button>
+      <button class="btn-ghost" id="btn-hint-mode" onclick="toggleHintMode()">Hint mode</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">Matching Game v1.0 &nbsp;·&nbsp; Pure HTML/CSS/JS &nbsp;·&nbsp; No dependencies</div>
+</footer>
+
+<script>
+/* ── Tabs ── */
+function switchTab(name){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
+  if(name==='board') setTimeout(()=>updatePreview(),50);
+  if(name==='play'){
+    setTimeout(()=>{
+      fitBoard();
+      // Auto-launch if no game is active (board is empty)
+      const board=document.getElementById('board');
+      if(board&&board.children.length===0&&gameW&&gameH) startNewGame();
+    },60);
+  }
+}
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
+  // iOS: touchstart fires immediately, preventDefault blocks the subsequent 300ms-delayed click
+  btn.addEventListener('touchstart',e=>{e.preventDefault();switchTab(btn.dataset.tab);},{passive:false});
+});
+
+/* ── Data ── */
+const TILE_COLORS = [
+  { bg: '#C0392B', p: ['#FF8A80','#FFBCB0','#FFD700','#FFFFFF'] },           // Red
+  { bg: '#D35400', p: ['#FFAB76','#FFD4A8','#FFE500','#FFFFFF'] },           // Orange
+  { bg: '#B7950B', p: ['#FFE566','#FFF3A8','#FF9800','#FFFFFF'] },           // Gold
+  { bg: '#1E8449', p: ['#6FE0A0','#B8F5D4','#FFD700','#FFFFFF'] },           // Green
+  { bg: '#1A5276', p: ['#5EB3FF','#A8D8FF','#FFD700','#FFFFFF'] },           // Blue
+  { bg: '#EC7FA5', stripe:'#C0392B', p: ['#FF4081','#FFB3CC','#FFD700','#FFFFFF'] }, // Pink
+  { bg: '#F0A585', stripe:'#D35400', p: ['#FF6D40','#FFD4A8','#FFE500','#FFFFFF'] }, // Peach
+  { bg: '#D4C35A', stripe:'#B7950B', p: ['#FFF176','#FFEE58','#FF9800','#FFFFFF'] }, // Straw
+  { bg: '#5EC9A0', stripe:'#1E8449', p: ['#00BFA5','#B2DFDB','#FFD700','#FFFFFF'] }, // Mint
+  { bg: '#5BA8DC', stripe:'#1A5276', p: ['#40C4FF','#B3E5FC','#FFD700','#FFFFFF'] }, // Sky
+];
+const TILE_SHAPES = ['circle','square','triangle','diamond','star','cross','hexagon','heart','ring','arrow','chevL','chevR','caret','equals','tilde'];
+const PREVIEW_BG  = ['#C0392B','#D35400','#B7950B','#1E8449','#1A5276','#EC7FA5','#F0A585','#D4C35A','#5EC9A0','#5BA8DC'];
+
+/* ── SVG shapes ── */
+function makeShapeSVG(shape) {
+  const s=100,h=50,p=0.60,r=h*p;
+  switch(shape){
+    case 'circle':   return `<circle cx="50" cy="50" r="${r}" fill="white"/>`;
+    case 'square':   { const side=s*p,off=(s-side)/2; return `<rect x="${off}" y="${off}" width="${side}" height="${side}" rx="4" fill="white"/>`; }
+    case 'triangle': { const tw=s*p*1.05,th=s*p*0.95,tx=(s-tw)/2,ty=(s-th)/2; return `<polygon points="50,${ty} ${tx+tw},${ty+th} ${tx},${ty+th}" fill="white"/>`; }
+    case 'diamond':  return `<polygon points="50,${50-r} ${50+r},50 50,${50+r} ${50-r},50" fill="white"/>`;
+    case 'star':     { let pts=''; for(let i=0;i<10;i++){const a=Math.PI/5*i-Math.PI/2,rv=i%2===0?r:r*0.42;pts+=`${50+rv*Math.cos(a)},${50+rv*Math.sin(a)} `;} return `<polygon points="${pts}" fill="white"/>`; }
+    case 'cross':    { const arm=s*p,thick=s*0.18,ao=(s-arm)/2,to=(s-thick)/2; return `<rect x="${ao}" y="${to}" width="${arm}" height="${thick}" rx="3" fill="white"/><rect x="${to}" y="${ao}" width="${thick}" height="${arm}" rx="3" fill="white"/>`; }
+    case 'hexagon':  { let hp=''; for(let i=0;i<6;i++){const a=Math.PI/3*i-Math.PI/6;hp+=`${50+r*Math.cos(a)},${50+r*Math.sin(a)} `;} return `<polygon points="${hp}" fill="white"/>`; }
+    case 'heart':    { const hy=50+r*0.1,hr=r*0.52; return `<path d="M50,${hy} C50,${hy-hr*1.5} ${50-hr*2},${hy-hr*1.5} ${50-hr*2},${hy-hr*0.5} C${50-hr*2},${hy+hr} 50,${hy+hr*1.6} 50,${hy+hr*1.6} C50,${hy+hr*1.6} ${50+hr*2},${hy+hr} ${50+hr*2},${hy-hr*0.5} C${50+hr*2},${hy-hr*1.5} 50,${hy-hr*1.5} 50,${hy}" fill="white"/>`; }
+    case 'ring':     return `<circle cx="50" cy="50" r="${r}" fill="none" stroke="white" stroke-width="${s*0.13}"/>`;
+    case 'arrow':    return `<polygon points="${s*0.15},${s*0.35} ${s*0.6},${s*0.35} ${s*0.6},${s*0.18} ${s*0.9},${s*0.5} ${s*0.6},${s*0.82} ${s*0.6},${s*0.65} ${s*0.15},${s*0.65}" fill="white"/>`;
+    case 'chevL':    return `<polygon points="78,18 60,18 16,50 60,82 78,82 38,50" fill="white"/>`;
+    case 'chevR':    return `<polygon points="22,18 40,18 84,50 40,82 22,82 62,50" fill="white"/>`;
+    case 'caret':    return `<polygon points="50,14 88,80 70,80 50,36 30,80 12,80" fill="white"/>`;
+    case 'equals':   return `<rect x="15" y="30" width="70" height="16" rx="3" fill="white"/><rect x="15" y="54" width="70" height="16" rx="3" fill="white"/>`;
+    case 'tilde':    return `<path d="M12,42 C22,22 40,22 50,42 C60,62 78,62 88,42 L88,58 C78,78 60,78 50,58 C40,38 22,38 12,58 Z" fill="white"/>`;
+    default: return '';
+  }
+}
+
+function canvasRoundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y);
+  ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);
+  ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h);
+  ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r);
+  ctx.arcTo(x,y,x+r,y,r);
+  ctx.closePath();
+}
+function updatePreview() {
+  const W=parseInt(document.getElementById('sl-w').value);
+  const H=parseInt(document.getElementById('sl-h').value);
+  const total=W*H, isOdd=total%2!==0, pairs=Math.floor(total/2);
+  const maxCombos=TILE_COLORS.length*TILE_SHAPES.length, canFit=pairs<=maxCombos;
+  document.getElementById('st-tiles').textContent=isOdd?total-1:total;
+  document.getElementById('st-pairs').textContent=pairs;
+  const evenTiles=isOdd?total-1:total;
+  const usedColors=Math.min(TILE_COLORS.length,Math.max(1,Math.ceil(evenTiles/4)));
+  const usedShapes=Math.min(TILE_SHAPES.length,Math.ceil(pairs/usedColors));
+  document.getElementById('st-colors').textContent=canFit?usedColors:'—';
+  document.getElementById('st-shapes').textContent=canFit?usedShapes:'—';
+  const warn=document.getElementById('odd-warn'), btn=document.getElementById('launch-btn');
+  if(!canFit){warn.textContent=`Too many pairs (max ${maxCombos})`;btn.disabled=true;}
+  else if(isOdd){warn.textContent='Odd total — center tile will be removed';btn.disabled=false;}
+  else{warn.textContent='';btn.disabled=false;}
+  const cv=document.getElementById('preview-canvas');
+  cv.width=cv.offsetWidth||760;
+  const cw=cv.width,ch=cv.height,ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,cw,ch);
+  const cell=Math.min((cw-16-(W-1)*4)/W,(ch-8-(H-1)*4)/H,36);
+  const totalW=W*cell+(W-1)*4,totalH=H*cell+(H-1)*4;
+  const ox=(cw-totalW)/2,oy=(ch-totalH)/2,lastIdx=W*H-1;
+  for(let r=0;r<H;r++) for(let c=0;c<W;c++){
+    const idx=r*W+c,x=ox+c*(cell+4),y=oy+r*(cell+4),isBlank=isOdd&&idx===lastIdx;
+    ctx.globalAlpha=isBlank?0.15:0.82;
+    ctx.fillStyle=isBlank?'#444':PREVIEW_BG[idx%PREVIEW_BG.length];
+    canvasRoundRect(ctx,x,y,cell,cell,Math.max(2,cell*0.18));
+    ctx.fill();
+  }
+  ctx.globalAlpha=1;
+}
+/* ── Scroll wheels ── */
+const WHEEL_MIN=2, WHEEL_MAX=12;
+const wheels={
+  w:{val:4, cur:'dw-cur', adjP:'dw-adj-prev', adjN:'dw-adj-next', farP:'dw-far-prev', farN:'dw-far-next', hidden:'sl-w', drum:'drum-w', up:'darr-w-up', dn:'darr-w-dn'},
+  h:{val:4, cur:'dh-cur', adjP:'dh-adj-prev', adjN:'dh-adj-next', farP:'dh-far-prev', farN:'dh-far-next', hidden:'sl-h', drum:'drum-h', up:'darr-h-up', dn:'darr-h-dn'},
+};
+function setWheel(key,v){
+  const w=wheels[key];
+  w.val=Math.max(WHEEL_MIN,Math.min(WHEEL_MAX,v));
+  document.getElementById(w.cur).textContent=w.val;
+  document.getElementById(w.adjP).textContent=w.val>WHEEL_MIN?w.val-1:'';
+  document.getElementById(w.adjN).textContent=w.val<WHEEL_MAX?w.val+1:'';
+  document.getElementById(w.farP).textContent=w.val>WHEEL_MIN+1?w.val-2:'';
+  document.getElementById(w.farN).textContent=w.val<WHEEL_MAX-1?w.val+2:'';
+  document.getElementById(w.hidden).value=w.val;
+  updatePreview();
+}
+['w','h'].forEach(key=>{
+  const w=wheels[key];
+  const drum=document.getElementById(w.drum);
+  if(!drum) return;
+  drum.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const delta=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;
+    setWheel(key,wheels[key].val+(delta>0?1:-1));
+  },{passive:false});
+  // Touch swipe support for iOS/Android
+  let touchStartX=0;
+  drum.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX;},{passive:true});
+  drum.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    const dx=e.touches[0].clientX-touchStartX;
+    if(Math.abs(dx)>12){
+      setWheel(key,wheels[key].val+(dx<0?1:-1));
+      touchStartX=e.touches[0].clientX;
+    }
+  },{passive:false});
+  document.getElementById(w.up).addEventListener('click',()=>setWheel(key,wheels[key].val-1));
+  document.getElementById(w.dn).addEventListener('click',()=>setWheel(key,wheels[key].val+1));
+});
+setWheel('w',4);
+setWheel('h',4);
+
+/* ── Game state ── */
+let gameW=4,gameH=4,totalPairs=0;
+let flipped=[],matched=0,moves=0,lock=false,startTime=null;
+let particles=[],rafId=null;
+let tileElements=[],hintUsed=false,hintMode=false;
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function buildCombos(pairs,totalTiles){
+  // Cap minColors at the palette size BEFORE dividing for shapesPerColor
+  const minColors=Math.min(TILE_COLORS.length,Math.max(1,Math.ceil(totalTiles/4)));
+  const allIndices=Array.from({length:TILE_COLORS.length},(_,i)=>i);
+  shuffle(allIndices);
+  const chosenIndices=allIndices.slice(0,minColors).sort((a,b)=>a-b);
+  // shapesPerColor must use the actual color count so total combos >= pairs
+  const shapesPerColor=Math.ceil(pairs/chosenIndices.length);
+  const c=[];
+  for(let ci=0;ci<chosenIndices.length&&c.length<pairs;ci++)
+    for(let si=0;si<shapesPerColor&&c.length<pairs;si++)
+      c.push({ci:chosenIndices[ci],si,id:`${chosenIndices[ci]}-${si}`});
+  return c;
+}
+
+function launchGame(){
+  gameW=parseInt(document.getElementById('sl-w').value);
+  gameH=parseInt(document.getElementById('sl-h').value);
+  switchTab('play');
+  setTimeout(()=>startNewGame(),80);
+}
+function playAgain(){
+  document.getElementById('win-overlay').classList.remove('show');
+  startNewGame();
+}
+function changeBoard(){
+  document.getElementById('win-overlay').classList.remove('show');
+  if(rafId){cancelAnimationFrame(rafId);rafId=null;}particles=[];
+  switchTab('board');
+}
+function resizeFxCanvas(){
+  const wrap=document.getElementById('board-wrap'),fc=document.getElementById('fx-canvas');
+  if(wrap&&fc){fc.width=wrap.offsetWidth;fc.height=wrap.offsetHeight;}
+}
+function fitBoard(){
+  if(!gameW||!gameH)return;
+  const playTab=document.getElementById('tab-play');
+  if(!playTab||!playTab.classList.contains('active'))return;
+
+  const tabBar=document.querySelector('.tab-bar');
+  const tabBarH=tabBar?tabBar.offsetHeight:46;
+
+  // Fixed chrome below tab bar (measured from CSS):
+  // play-pad-top(.75rem=12) + HUD(~66px) + HUD-margin-bottom(.75rem=12)
+  // + footer-margin-top(.75rem=12) + footer-btn(~34px) + play-pad-bottom(.75rem=12) = 148px
+  const CHROME=148;
+  const availH=window.innerHeight-tabBarH-CHROME;
+
+  const container=document.querySelector('#tab-play .container');
+  const availW=container?container.offsetWidth:window.innerWidth-64;
+
+  if(availH<60||availW<60)return;
+
+  const gap=6;
+  const tileByW=Math.floor((availW-(gameW-1)*gap)/gameW);
+  const tileByH=Math.floor((availH-(gameH-1)*gap)/gameH);
+  const tileSize=Math.max(24,Math.min(tileByW,tileByH));
+
+  // Set board column template
+  const board=document.getElementById('board');
+  if(board) board.style.gridTemplateColumns=`repeat(${gameW},${tileSize}px)`;
+
+  // Explicitly set board-wrap height to match the board so fx canvas is sized right
+  const wrap=document.getElementById('board-wrap');
+  if(wrap) wrap.style.height=(tileSize*gameH+(gameH-1)*gap)+'px';
+
+  resizeFxCanvas();
+}
+function updateHintButtons(){
+  const hb=document.getElementById('btn-hint');
+  const hm=document.getElementById('btn-hint-mode');
+  if(!hb||!hm)return;
+  hb.disabled=hintUsed||hintMode||flipped.length!==1;
+  hb.textContent=hintUsed?'Hint ✓':'Hint';
+  hm.classList.toggle('hint-active',hintMode);
+  hm.textContent=hintMode?'Hint mode on':'Hint mode';
+}
+function doHint(){
+  if(flipped.length!==1)return;
+  const target=flipped[0];
+  const match=tileElements.find(el=>
+    el.t.id===target.t.id&&el.div!==target.div&&
+    !el.div.classList.contains('gone')&&!el.div.classList.contains('flipped')
+  );
+  if(!match)return;
+  match.div.classList.add('flipped');
+  setTimeout(()=>match.div.classList.remove('flipped'),1000);
+}
+function useHint(){
+  if(hintUsed||hintMode||flipped.length!==1)return;
+  doHint();
+  hintUsed=true;
+  updateHintButtons();
+  setTimeout(()=>{hintUsed=false;updateHintButtons();},1100);
+}
+function toggleHintMode(){
+  hintMode=!hintMode;
+  updateHintButtons();
+  if(hintMode&&flipped.length===1)doHint();
+}
+function startNewGame(){
+  if(rafId){cancelAnimationFrame(rafId);rafId=null;}particles=[];
+  flipped=[];matched=0;moves=0;lock=false;startTime=null;
+  const total=gameW*gameH,even=total%2===0?total:total-1;
+  totalPairs=even/2;
+  document.getElementById('g-moves').textContent='0';
+  document.getElementById('g-pairs').textContent=totalPairs;
+  document.getElementById('g-matched').textContent='0';
+  document.getElementById('g-left').textContent=totalPairs;
+  document.getElementById('win-overlay').classList.remove('show');
+  hintUsed=false; tileElements=[];
+  const lbl=document.getElementById('board-size-label');
+  if(lbl) lbl.textContent=`${gameW} \u00d7 ${gameH} Board`;
+  updateHintButtons();
+  const combos=buildCombos(totalPairs,even),pairs=[];
+  combos.forEach(c=>pairs.push({...c},{...c}));
+  shuffle(pairs);
+  if(total%2!==0){const center=Math.floor(total/2);pairs.splice(center,0,null);}
+  const board=document.getElementById('board');
+  board.innerHTML='';
+  board.style.gridTemplateColumns='';
+  pairs.forEach(t=>{
+    if(t===null){const b=document.createElement('div');b.style.aspectRatio='1';board.appendChild(b);return;}
+    const col=TILE_COLORS[t.ci],shape=TILE_SHAPES[t.si],div=document.createElement('div');
+    div.className='tile';
+    const bgStyle=col.stripe
+      ? `repeating-linear-gradient(-45deg,${col.stripe} 0,${col.stripe} 12%,${col.bg} 12%,${col.bg} 25%)`
+      : col.bg;
+    div.innerHTML=`<div class="tile-inner"><div class="tile-back"><svg width="36%" height="36%" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="10"/><circle cx="50" cy="50" r="16" fill="rgba(255,255,255,.08)"/></svg></div><div class="tile-front" style="background:${bgStyle}"><svg width="100%" height="100%" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${makeShapeSVG(shape)}</svg></div></div>`;
+    div.addEventListener('click',()=>flip(div,t));
+    tileElements.push({div,t});
+    board.appendChild(div);
+  });
+  setTimeout(()=>fitBoard(),60);
+}
+
+function flip(div,t){
+  if(lock||div.classList.contains('flipped')||div.classList.contains('gone'))return;
+  if(!startTime)startTime=Date.now();
+  div.classList.add('flipped');flipped.push({div,t});
+  if(flipped.length===1){
+    updateHintButtons();
+    if(hintMode) doHint();
+  }
+  if(flipped.length===2){
+    updateHintButtons();
+    lock=true;moves++;document.getElementById('g-moves').textContent=moves;
+    const[a,b]=flipped;
+    if(a.t.id===b.t.id){
+      matched++;
+      document.getElementById('g-matched').textContent=matched;
+      document.getElementById('g-left').textContent=totalPairs-matched;
+      flipped=[];const col=TILE_COLORS[a.t.ci];
+      setTimeout(()=>{
+        triggerFX(a.div,b.div,col);
+        a.div.classList.add('spiraling');b.div.classList.add('spiraling');
+        setTimeout(()=>{
+          a.div.classList.add('gone');b.div.classList.add('gone');lock=false;
+          hintUsed=false;updateHintButtons();
+          if(matched===totalPairs){const secs=Math.round((Date.now()-startTime)/1000);setTimeout(()=>{triggerWinFX();setTimeout(()=>{document.getElementById('win-stats-text').textContent=`${moves} moves · ${secs} seconds`;document.getElementById('win-overlay').classList.add('show');},700);},300);}
+        },700);
+      },200);
+    }else{
+      setTimeout(()=>{a.div.classList.remove('flipped');b.div.classList.remove('flipped');flipped=[];lock=false;hintUsed=false;updateHintButtons();},1500);
+    }
+  }
+}
+
+function triggerWinFX(){
+  resizeFxCanvas();
+  const wrap=document.getElementById('board-wrap');
+  const W=wrap.offsetWidth, H=wrap.offsetHeight;
+  const allColors=['#FF5252','#FF7043','#FFD740','#69F0AE','#40C4FF','#E040FB','#FF80AB','#CCFF90','#FF6E40','#FFFFFF','#FFD700','#C0BBFF'];
+  const positions=[[.15,.2],[.5,.1],[.85,.2],[.1,.5],[.5,.5],[.9,.5],[.15,.8],[.5,.9],[.85,.8],[.35,.35],[.65,.65],[.3,.7],[.7,.3]];
+  positions.forEach(([fx,fy],i)=>{
+    setTimeout(()=>{
+      spawnFX(W*fx, H*fy, allColors);
+      if(!rafId) rafId=requestAnimationFrame(animFX);
+    }, i*90);
+  });
+}
+function getTileCenter(div){const wrap=document.getElementById('board-wrap'),tb=div.getBoundingClientRect(),wb=wrap.getBoundingClientRect();return{x:tb.left-wb.left+tb.width/2,y:tb.top-wb.top+tb.height/2};}
+function spawnFX(cx,cy,colors){
+  for(let i=0;i<52;i++){const angle=Math.random()*Math.PI*2,speed=1.5+Math.random()*4.5,color=colors[Math.floor(Math.random()*colors.length)],type=Math.random()<0.3?'streak':'dot';particles.push({x:cx,y:cy,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,alpha:1,color,type,size:type==='streak'?3+Math.random()*2:2+Math.random()*3,decay:0.018+Math.random()*0.022,gravity:0.06+Math.random()*0.04,spin:Math.random()*0.3-0.15,trail:[]});}
+  for(let i=0;i<30;i++){const angle=(Math.PI*2/30)*i,speed=2+Math.random()*2;particles.push({x:cx,y:cy,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,alpha:1,color:'#FFFFFF',type:'ring',size:2,decay:0.025,gravity:0,spin:0.25,baseAngle:angle,spiralSpeed:speed});}
+}
+function animFX(){
+  const fc=document.getElementById('fx-canvas'),ctx=fc.getContext('2d');
+  ctx.clearRect(0,0,fc.width,fc.height);
+  particles=particles.filter(p=>p.alpha>0.01);
+  for(const p of particles){
+    if(p.type==='ring'){p.baseAngle+=p.spin;p.x+=Math.cos(p.baseAngle)*p.spiralSpeed*0.3;p.y+=Math.sin(p.baseAngle)*p.spiralSpeed*0.3;p.spiralSpeed*=0.97;p.alpha-=p.decay;ctx.globalAlpha=p.alpha;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=p.color;ctx.fill();}
+    else{p.trail.push({x:p.x,y:p.y});if(p.trail.length>6)p.trail.shift();p.vx+=p.spin;p.vy+=p.gravity;p.x+=p.vx;p.y+=p.vy;p.vx*=0.97;p.vy*=0.97;p.alpha-=p.decay;if(p.type==='streak'&&p.trail.length>1){for(let t=1;t<p.trail.length;t++){ctx.globalAlpha=p.alpha*(t/p.trail.length)*0.7;ctx.strokeStyle=p.color;ctx.lineWidth=p.size*0.7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(p.trail[t-1].x,p.trail[t-1].y);ctx.lineTo(p.trail[t].x,p.trail[t].y);ctx.stroke();}}ctx.globalAlpha=p.alpha;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=p.color;ctx.fill();}
+  }
+  ctx.globalAlpha=1;
+  if(particles.length>0){rafId=requestAnimationFrame(animFX);}else{ctx.clearRect(0,0,fc.width,fc.height);rafId=null;}
+}
+function triggerFX(dA,dB,col){
+  resizeFxCanvas();const ca=getTileCenter(dA),cb=getTileCenter(dB);
+  spawnFX(ca.x,ca.y,col.p);spawnFX(cb.x,cb.y,col.p);
+  if(!rafId)rafId=requestAnimationFrame(animFX);
+}
+
+window.addEventListener('resize',()=>{
+  updatePreview();
+  if(gameW&&gameH) setTimeout(()=>fitBoard(),60);
+});
+updatePreview();
+</script>
+</body>
+</html>

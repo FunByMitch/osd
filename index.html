@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offset Dot Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;600&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#080810;--surface:#0f0f1a;--border:#1e1e30;
+  --lime:#c8ff3a;--purple:#c8c0ff;--teal:#00e5c0;
+  --text:#f0eff8;--muted:#6a6982;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* ── Hero ── */
+.hero{
+  position:relative;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 24px 80px;text-align:center;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;z-index:0;
+  display:grid;grid-template-columns:repeat(5,1fr);gap:2px;
+  opacity:.18;pointer-events:none;
+}
+.hero-bg canvas{width:100%;height:100%;display:block;}
+.hero-content{position:relative;z-index:1;}
+.eyebrow{
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.25em;
+  text-transform:uppercase;color:var(--lime);margin-bottom:20px;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.eyebrow::before,.eyebrow::after{content:'';width:24px;height:1px;background:var(--lime);opacity:.5;}
+h1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(4rem,12vw,10rem);
+  line-height:.9;letter-spacing:.02em;color:#fff;
+  text-shadow:0 0 80px rgba(200,255,58,.12);
+}
+h1 em{font-style:normal;color:var(--lime);}
+.hero-sub{
+  margin-top:20px;font-size:clamp(.95rem,2vw,1.15rem);
+  color:var(--muted);font-weight:400;max-width:500px;
+  line-height:1.65;
+}
+.hero-sub strong{color:var(--text);font-weight:600;}
+.scroll-cue{
+  margin-top:48px;display:inline-flex;flex-direction:column;
+  align-items:center;gap:6px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.15em;color:var(--muted);text-transform:uppercase;
+  animation:bob 2s ease-in-out infinite;
+}
+.scroll-cue svg{opacity:.4;}
+@keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(6px);}}
+
+/* ── Cards section ── */
+.cards-section{
+  max-width:1160px;margin:0 auto;
+  padding:0 24px 120px;
+}
+.section-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:32px;
+  border-left:2px solid var(--border);padding-left:12px;
+}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:2px;}
+
+.card{
+  position:relative;background:var(--surface);
+  overflow:hidden;cursor:pointer;
+  transition:transform .2s ease,box-shadow .2s ease;
+  text-decoration:none;color:inherit;display:block;
+}
+.card:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.card:first-child{border-radius:16px 0 0 16px;}
+.card:last-child{border-radius:0 16px 16px 0;}
+@media(max-width:700px){
+  .card:first-child,.card:last-child,.card{border-radius:0;}
+  .cards{gap:2px;}
+  .card:first-child{border-radius:12px 12px 0 0;}
+  .card:last-child{border-radius:0 0 12px 12px;}
+}
+
+.card-canvas-wrap{
+  width:100%;aspect-ratio:16/9;
+  position:relative;overflow:hidden;
+}
+.card-canvas-wrap canvas{width:100%;height:100%;display:block;}
+.card-glow{
+  position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 40%,var(--surface) 100%);
+  pointer-events:none;
+}
+
+.card-body{padding:28px 28px 32px;}
+.card-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  margin-bottom:10px;font-weight:600;
+}
+.card h2{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:2.4rem;letter-spacing:.03em;line-height:1;margin-bottom:12px;
+}
+.card p{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px;}
+.card-cta{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;
+  letter-spacing:.1em;text-transform:uppercase;font-weight:600;
+  padding:10px 20px;border-radius:6px;
+  transition:opacity .15s,transform .15s;
+}
+.card:hover .card-cta{transform:translateX(3px);}
+.card-cta svg{transition:transform .15s;}
+.card:hover .card-cta svg{transform:translateX(2px);}
+
+/* Card accent colors */
+.card-studio .card-tag{color:var(--lime);}
+.card-studio .card-cta{background:rgba(200,255,58,.1);color:var(--lime);border:1px solid rgba(200,255,58,.2);}
+.card-guide .card-tag{color:var(--teal);}
+.card-guide .card-cta{background:rgba(0,229,192,.1);color:var(--teal);border:1px solid rgba(0,229,192,.2);}
+.card-game .card-tag{color:var(--purple);}
+.card-game .card-cta{background:rgba(200,192,255,.1);color:var(--purple);border:1px solid rgba(200,192,255,.2);}
+
+/* ── Footer ── */
+footer{
+  border-top:1px solid var(--border);
+  padding:28px 24px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--muted);letter-spacing:.08em;gap:16px;flex-wrap:wrap;
+}
+footer span{opacity:.4;}
+</style>
+</head>
+<body>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-content">
+    <div class="eyebrow">Geometric Pattern Tools</div>
+    <h1>OFFSET<br>DOT <em>STUDIO</em></h1>
+    <p class="hero-sub">
+      A suite of tools for designing <strong>offset-grid patterns</strong> — scallops,
+      sine waves, honeycomb fills, and more. Design, learn, and play.
+    </p>
+    <div class="scroll-cue">
+      Explore
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 3v10M4 9l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ── Cards ── -->
+<div class="cards-section">
+  <div class="section-label">Three tools — one family</div>
+  <div class="cards">
+
+    <!-- Studio -->
+    <a class="card card-studio" href="./offset-dot-studio.html">
+      <div class="card-canvas-wrap">
+        <canvas id="cv-studio"></canvas>
+        <div class="card-glow"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-tag">Design Tool · v1.0</div>
+        <h2>Studio</h2>
+        <p>9 patterns across two families — geometric fills and arc scallops. Adjust cell size, arc depth, colors, and axis. Export full-resolution PNG or print to PDF.</p>
+        <div class="card-cta">
+          Open Studio
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- Guide -->
+    <a class="card card-guide" href="./offset-dot-studio-guide.html">
+      <div class="card-canvas-wrap">
+        <canvas id="cv-guide"></canvas>
+        <div class="card-glow"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-tag">Reference · v1.0</div>
+        <h2>Guide</h2>
+        <p>Every pattern explained with live thumbnails. Quick start walkthrough, complete parameter reference, and workflow tips for getting the most out of the studio.</p>
+        <div class="card-cta">
+          Open Guide
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- Game -->
+    <a class="card card-game" href="./matching-game.html">
+      <div class="card-canvas-wrap">
+        <canvas id="cv-game"></canvas>
+        <div class="card-glow"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-tag">Game · Pattern Memory</div>
+        <h2>Match</h2>
+        <p>A memory matching game built from the same pattern tiles. Flip cards, find pairs, race the clock. Configurable board size — from a quick 4×4 to a full 8×6 challenge.</p>
+        <div class="card-cta">
+          Play Now
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<footer>
+  <span>Offset Dot Studio · v1.0 · May 2026</span>
+</footer>
+
+<script>
+'use strict';
+// ── Minimal drawing engine for landing page previews ──────────────────────────
+function arcP(p,x1,y1,x2,y2,bow){
+  if(!bow){p.lineTo(x2,y2);return;}
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+  if(!len){p.lineTo(x2,y2);return;}
+  const px=-dy/len,py=dx/len;
+  const qx=(x1+x2)/2+px*bow,qy=(y1+y2)/2+py*bow;
+  const c1x=x1+(2/3)*(qx-x1),c1y=y1+(2/3)*(qy-y1);
+  const c2x=x2+(2/3)*(qx-x2),c2y=y2+(2/3)*(qy-y2);
+  p.bezierCurveTo(c1x,c1y,c2x,c2y,x2,y2);
+}
+function buildNS(b,W,H){
+  const dots=[];let row=0,y=b.y;
+  while(y<=b.y+b.h+1){
+    const x0=b.x+(row%2?W/2:0),rd=[];
+    for(let x=x0;x<=b.x+b.w+1;x+=W)rd.push([x,y]);
+    dots.push(rd);y+=H/2;row++;
+  }
+  const mc=Math.min(...dots.map(r=>r.length));
+  return{dots,vc:Array.from({length:mc},(_,i)=>i)};
+}
+function gbNS(b,V,H){const iy=Math.max(H/2,Math.ceil(Math.max(V,1)/(H/2))*(H/2));return{x:b.x,y:b.y+iy,w:b.w,h:b.h-2*iy};}
+function cPts(d,c){return d.reduce((a,r)=>c<r.length?[...a,r[c]]:a,[]);}
+function arcOK(lp,rp,V,b){
+  const lx=Math.min(...lp.map(([x])=>x)),rx=Math.max(...rp.map(([x])=>x));
+  const y0=lp[0][1],yN=lp[lp.length-1][1];
+  return lx-V>=b.x&&rx+V<=b.x+b.w&&y0-V>=b.y&&yN+V<=b.y+b.h;
+}
+function nsStrip(lp,rp,lbf,rbf,hb){
+  const p=new Path2D();p.moveTo(...lp[0]);
+  for(let s=0;s<lp.length-1;s++)arcP(p,...lp[s],...lp[s+1],lbf(s));
+  arcP(p,...lp[lp.length-1],...rp[rp.length-1],hb);
+  for(let s=rp.length-1;s>0;s--)arcP(p,...rp[s],...rp[s-1],-rbf(s-1));
+  arcP(p,...rp[0],...lp[0],-hb);p.closePath();return p;
+}
+function clip(ctx,b,fn){ctx.save();ctx.beginPath();ctx.rect(b.x,b.y,b.w,b.h);ctx.clip();fn();ctx.restore();}
+
+function hexCenters(bbox,W){
+  const rowStep=W*Math.sqrt(3)/2;const centers=[];let row=0,y=bbox.y-W;
+  while(y<=bbox.y+bbox.h+W){
+    const x0=bbox.x-W+(row%2?W/2:0);let col=0,x=x0;
+    while(x<=bbox.x+bbox.w+W){centers.push({x,y,row,col});x+=W;col++;}
+    y+=rowStep;row++;
+  }
+  return centers;
+}
+function hexOK(cx,cy,R,b){
+  for(let k=0;k<6;k++){const a=k*Math.PI/3,vx=cx+R*Math.sin(a),vy=cy-R*Math.cos(a);if(vx<b.x||vx>b.x+b.w||vy<b.y||vy>b.y+b.h)return false;}return true;
+}
+
+// ── Render preview for each card canvas ──────────────────────────────────────
+function renderStudio(cv){
+  // Scallop Fish Scale — coral/gold
+  const W=cv.width,H=cv.height;
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle='#0f0f1a';ctx.fillRect(0,0,W,H);
+  const b={x:0,y:0,w:W,h:H},cw=44,ch=44,V=14;
+  const C1='#e06040',C2='#f5a623';
+  const{dots,vc}=buildNS(gbNS(b,V,ch),cw,ch);
+  clip(ctx,b,()=>{
+    for(let ci=0;ci<vc.length-1;ci++){
+      const lp=cPts(dots,vc[ci]),rp=cPts(dots,vc[ci+1]);
+      if(lp.length<2||rp.length<2)continue;
+      if(!arcOK(lp,rp,V,b))continue;
+      ctx.fillStyle=ci%2?C2:C1;ctx.fill(nsStrip(lp,rp,_=>V,_=>V,V));
+    }
+  });
+}
+
+function renderGuide(cv){
+  // Sine Offsets — teal/mint
+  const W=cv.width,H=cv.height;
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle='#0a0f12';ctx.fillRect(0,0,W,H);
+  const b={x:0,y:0,w:W,h:H};
+  const cw=52,ch=52,NS=24;
+  const C1='#00b896',C2='#00e5c0';
+  const cxs=[],dys=[];
+  for(let x=b.x;x<=b.x+b.w+1;x+=cw)cxs.push(x);
+  const lvy=b.y+Math.floor(b.h/(ch/2))*(ch/2);
+  for(let y=b.y;y<=lvy+.5;y+=ch/2)dys.push(y);
+  const cfn=(xc,ci,y)=>xc+(cw/2)*Math.cos(2*Math.PI*(y-b.y)/ch+Math.PI*ci);
+  const bpts=(xc,ci)=>{const pts=[];for(let sg=0;sg<dys.length-1;sg++){const y0=dys[sg],y1=dys[sg+1];for(let i=0;i<NS;i++){const t=i/NS,y=y0+t*(y1-y0);pts.push([cfn(xc,ci,y),y]);}}pts.push([cfn(xc,ci,dys[dys.length-1]),dys[dys.length-1]]);return pts;};
+  clip(ctx,b,()=>{
+    for(let ci=0;ci<cxs.length-1;ci++){
+      if(cxs[ci]-cw/2<b.x||cxs[ci+1]+cw/2>b.x+b.w)continue;
+      const lp=bpts(cxs[ci],ci),rp=bpts(cxs[ci+1],ci+1);
+      ctx.fillStyle=ci%2?C2:C1;
+      const path=new Path2D();path.moveTo(...lp[0]);lp.slice(1).forEach(q=>path.lineTo(...q));
+      path.lineTo(...rp[rp.length-1]);for(let i=rp.length-2;i>=0;i--)path.lineTo(...rp[i]);
+      path.closePath();ctx.fill(path);
+    }
+  });
+}
+
+function renderGame(cv){
+  // Hex Fill ×3 — purple palette
+  const W=cv.width,H=cv.height;
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle='#0d0a18';ctx.fillRect(0,0,W,H);
+  const b={x:0,y:0,w:W,h:H};
+  const hw=46,R=hw/Math.sqrt(3);
+  const colors=['#7c3aed','#a855f7','#c8c0ff'];
+  const cf=(row,col)=>{const q=col-Math.floor((row-(row&1))/2);return((q+2*row)%3+3)%3;};
+  const ok=hexCenters(b,hw).filter(({x,y})=>hexOK(x,y,R,b));
+  clip(ctx,b,()=>{
+    ok.forEach(({x,y,row,col})=>{
+      ctx.fillStyle=colors[cf(row,col)];
+      ctx.beginPath();
+      for(let k=0;k<6;k++){const a=k*Math.PI/3,vx=x+R*Math.sin(a),vy=y-R*Math.cos(a);k===0?ctx.moveTo(vx,vy):ctx.lineTo(vx,vy);}
+      ctx.closePath();ctx.fill();
+    });
+    // subtle dots
+    const dr=Math.max(2,R*.18);ctx.fillStyle='rgba(255,255,255,.25)';
+    ok.forEach(({x,y})=>{ctx.beginPath();ctx.arc(x,y,dr,0,Math.PI*2);ctx.fill();});
+  });
+}
+
+// ── Hero background — five small pattern canvases ─────────────────────────────
+function buildHeroBg(){
+  const wrap=document.getElementById('heroBg');
+  const previews=[
+    (cv)=>{// Curved offsets
+      const b={x:0,y:0,w:cv.width,h:cv.height},W=40,H=40,V=11;
+      const ctx=cv.getContext('2d');ctx.fillStyle='#c8ff3a10';ctx.fillRect(0,0,cv.width,cv.height);
+      const bf=s=>s%2===0?V:-V;
+      const{dots,vc}=buildNS(gbNS(b,V,H),W,H);
+      clip(ctx,b,()=>{
+        for(let ci=0;ci<vc.length-1;ci++){
+          const lp=cPts(dots,vc[ci]),rp=cPts(dots,vc[ci+1]);
+          if(lp.length<2||rp.length<2)continue;if(!arcOK(lp,rp,V,b))continue;
+          ctx.fillStyle=ci%2?'rgba(200,255,58,.06)':'rgba(200,255,58,.03)';
+          ctx.fill(nsStrip(lp,rp,bf,bf,ci%2===0?V:-V));
+        }
+      });
+    },
+    (cv)=>renderStudio(cv),
+    renderGuide,
+    renderGame,
+    (cv)=>{// Scallop bead chain
+      const b={x:0,y:0,w:cv.width,h:cv.height},W=38,H=38,V=13;
+      const ctx=cv.getContext('2d');ctx.fillStyle='#0f0f1a';ctx.fillRect(0,0,cv.width,cv.height);
+      const{dots,vc}=buildNS(gbNS(b,V,H),W,H);
+      clip(ctx,b,()=>{
+        for(let ci=0;ci<vc.length-1;ci++){
+          const cl=vc[ci],cr=vc[ci+1],lp=cPts(dots,cl),rp=cPts(dots,cr);
+          if(lp.length<2||rp.length<2)continue;if(!arcOK(lp,rp,V,b))continue;
+          const bl=cl%2===0?V:-V,br=cr%2===0?V:-V;
+          ctx.fillStyle=ci%2?'#3a2060':'#2a1550';
+          ctx.fill(nsStrip(lp,rp,_=>bl,_=>br,bl));
+        }
+      });
+    },
+  ];
+  previews.forEach(fn=>{
+    const cv=document.createElement('canvas');
+    wrap.appendChild(cv);
+    const size=()=>{const w=cv.offsetWidth,h=cv.offsetHeight;if(!w||!h)return;cv.width=w;cv.height=h;fn(cv);};
+    const ro=new ResizeObserver(size);ro.observe(cv);
+  });
+}
+
+// ── Init card canvases ────────────────────────────────────────────────────────
+function initCard(id,fn){
+  const cv=document.getElementById(id);
+  const size=()=>{const w=cv.offsetWidth,h=cv.offsetHeight;if(!w||!h)return;cv.width=w;cv.height=h;fn(cv);};
+  const ro=new ResizeObserver(size);ro.observe(cv.parentElement);
+}
+
+buildHeroBg();
+initCard('cv-studio',renderStudio);
+initCard('cv-guide',renderGuide);
+initCard('cv-game',renderGame);
+</script>
+</body>
+</html>

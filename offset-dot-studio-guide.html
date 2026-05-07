@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Offset Dot Studio Guide v1.0 · May 2026 -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offset Dot Studio — Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0a12;--surface:#12121e;--surface2:#1c1c2c;
+  --border:#22223a;--border2:#333350;
+  --accent:#c8ff3a;--text:#ffffff;--muted:#7070a0;--body:#c8c8e0;
+  --r:8px;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:15px;line-height:1.7;}
+
+/* ── Nav ── */
+nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 32px;}
+.nav-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:0;height:52px;}
+.nav-title{font-family:'Bebas Neue',cursive;font-size:20px;letter-spacing:3px;color:var(--accent);white-space:nowrap;margin-right:28px;}
+.nav-links{display:flex;gap:4px;overflow-x:auto;flex:1;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:12px;padding:6px 12px;border-radius:var(--r);white-space:nowrap;transition:color .15s,background .15s;letter-spacing:.5px;}
+.nav-links a:hover{color:var(--text);background:var(--surface);}
+
+/* ── Layout ── */
+main{max-width:900px;margin:0 auto;padding:48px 32px 80px;}
+section{margin-bottom:64px;}
+h2{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;letter-spacing:1px;color:var(--accent);margin-bottom:6px;}
+.section-sub{font-size:12px;color:var(--body);letter-spacing:.3px;margin-bottom:28px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+h3{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;letter-spacing:.5px;color:var(--accent);margin:28px 0 10px;}
+p{color:var(--body);font-weight:600;margin-bottom:12px;font-size:14px;line-height:1.8;}
+p strong{color:var(--accent);}
+
+/* ── Pattern cards ── */
+.pattern-card{display:flex;gap:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;align-items:flex-start;}
+.pattern-card canvas{flex-shrink:0;border-radius:6px;background:#fff;display:block;}
+.pattern-info{flex:1;min-width:0;}
+.pattern-name{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;letter-spacing:.3px;color:var(--accent);display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.pattern-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.pattern-desc{font-size:13px;color:var(--body);font-weight:600;line-height:1.7;margin-bottom:10px;}
+.pattern-note{font-size:12px;color:var(--body);font-weight:600;background:var(--surface2);border-radius:var(--r);padding:8px 12px;line-height:1.6;}
+.pattern-note strong{color:var(--accent);}
+
+/* ── Param cards ── */
+.param-group{margin-bottom:32px;}
+.param-group-title{font-size:11px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.param-row{display:flex;gap:16px;padding:12px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+.param-row:last-child{border-bottom:none;}
+.param-key{font-size:13px;color:var(--accent);min-width:130px;flex-shrink:0;padding-top:2px;}
+.param-body{}
+.param-title{font-size:14px;color:var(--text);font-weight:600;margin-bottom:3px;}
+.param-text{font-size:13px;color:var(--body);font-weight:600;line-height:1.7;}
+.param-tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:4px;background:var(--surface2);color:var(--muted);margin-left:6px;vertical-align:middle;letter-spacing:.5px;}
+
+/* ── Arc depth diagram ── */
+.arc-diagram{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;margin:12px 0;}
+.arc-diagram svg{display:block;width:100%;height:auto;}
+.arc-diagram-labels{display:flex;justify-content:space-around;margin-top:8px;}
+.arc-diagram-labels span{font-size:11px;color:var(--muted);text-align:center;}
+
+/* ── Output cards ── */
+.output-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px;display:flex;gap:16px;align-items:flex-start;}
+.output-icon{font-size:22px;flex-shrink:0;padding-top:2px;}
+.output-title{font-size:15px;color:var(--text);font-weight:600;margin-bottom:4px;}
+.output-text{font-size:13px;color:var(--body);font-weight:600;line-height:1.7;}
+
+/* ── Tip boxes ── */
+.tip{background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 var(--r) var(--r) 0;padding:10px 14px;margin:14px 0;font-size:13px;color:var(--body);font-weight:600;line-height:1.7;}
+.tip strong{color:var(--accent);}
+
+/* ── Workflow steps ── */
+.steps{counter-reset:step;margin:14px 0;}
+.step{display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#0a0a12;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-body{flex:1;}
+.step-title{font-size:14px;color:var(--text);font-weight:600;margin-bottom:3px;}
+.step-text{font-size:13px;color:var(--body);font-weight:600;line-height:1.7;}
+
+@media(max-width:600px){
+  .pattern-card{flex-direction:column;}
+  .pattern-card canvas{width:100%!important;height:120px!important;}
+  main{padding:32px 16px 60px;}
+  nav{padding:0 16px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-title">ODS GUIDE <span style="font-size:10px;opacity:.5;letter-spacing:0;">v1.0</span></div>
+    <div class="nav-links">
+      <a href="#quickstart">Quick Start</a>
+      <a href="#gallery">Pattern Gallery</a>
+      <a href="#parameters">Parameters</a>
+      <a href="#output">Output</a>
+      <a href="#workflow">Workflow Tips</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="quickstart">
+  <h2>Quick Start</h2>
+  <div class="section-sub">Get Oriented in Three Steps</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Choose a pattern</div>
+        <div class="step-text">Click the <strong>Gallery</strong> dropdown at the top of the left panel. Hover over any name to see a preview appear to the right. Click to select it.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Adjust parameters</div>
+        <div class="step-text">Scroll down the left panel to find all controls — cell size, colors, dot density, arc depth, and display options. The canvas on the right updates instantly as you adjust.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Open or print</div>
+        <div class="step-text">Scroll to the bottom of the panel. <strong>Open in new window</strong> renders a full 1920×1080 PNG. <strong>Print / save PDF</strong> renders at US Letter and opens your browser's print dialog.</div>
+      </div>
+    </div>
+  </div>
+  <div class="tip"><strong>Tip:</strong> Your last-used settings for each pattern are automatically saved. When you return to a pattern, it picks up exactly where you left off.</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="gallery">
+  <h2>Pattern Gallery</h2>
+  <div class="section-sub">9 Designs — Click Gallery Dropdown to Select</div>
+
+  <h3>Geometric Patterns</h3>
+
+  <div class="pattern-card" id="card-offset-dots">
+    <canvas width="220" height="150" data-pid="0"></canvas>
+    <div class="pattern-info">
+      <div class="pattern-name"><span class="pattern-dot" style="background:#4169e1"></span>Offset Dots</div>
+      <div class="pattern-desc">The foundation of the family. Diamond-shaped fills bounded by straight lines, arranged in an offset grid. Clean and geometric — each alternating strip gets Color 1 or Color 2.</div>
+      <div class="pattern-note"><strong>Best for:</strong> Clean two-color patterns, quilting references, simple textile designs. Start here to understand the grid before exploring the arc variants.</div>
+    </div>
+  </div>
+
+  <div class="pattern-card" id="card-triangle-fill">
+    <canvas width="220" height="150" data-pid="1"></canvas>
+    <div class="pattern-info">
+      <div class="pattern-name"><span class="pattern-dot" style="background:#cc2200"></span>Triangle Fill</div>
+      <div class="pattern-desc">Straight-line triangles derived from the same offset grid. Two triangle orientations (up and down) each get their own color, and the narrow edge triangles at the left and right boundaries get a third accent color.</div>
+      <div class="pattern-note"><strong>Three colors:</strong> Unlike other patterns this one uses three distinct fills — use the Edge Triangle Color to either match a main color (to hide them) or contrast strongly to frame the pattern.</div>
+    </div>
+  </div>
+
+  <div class="pattern-card" id="card-sine-offsets">
+    <canvas width="220" height="150" data-pid="2"></canvas>
+    <div class="pattern-info">
+      <div class="pattern-name"><span class="pattern-dot" style="background:#00aa88"></span>Sine Offsets</div>
+      <div class="pattern-desc">Adjacent boundaries are cosine waves in opposite phase, so they cross at every grid point and create interlocking lens or eye shapes. The boundary is a smooth continuous curve rather than piecewise arcs.</div>
+      <div class="pattern-note"><strong>Cell dimensions matter:</strong> W controls the lens width and H controls the lens height. Square cells give round lenses; tall cells give narrow pointed lenses.</div>
+    </div>
+  </div>
+
+  <div class="pattern-card" id="card-hex-fill-2">
+    <canvas width="220" height="150" data-pid="3"></canvas>
+    <div class="pattern-info">
+      <div class="pattern-name"><span class="pattern-dot" style="background:#cc8800"></span>Hex Fill ×2</div>
+      <div class="pattern-desc">A honeycomb tiling derived from the offset dot grid with a two-color alternation. Each dot becomes the center of a regular hexagon. Only complete hexagons are drawn — no partial shapes at the edges.</div>
+      <div class="pattern-note"><strong>Two-color note:</strong> Adjacent hexes in the same row always alternate colors, but some diagonal neighbors may share a color. This creates a striped zigzag rhythm across the pattern.</div>
+    </div>
+  </div>
+
+  <div class="pattern-card" id="card-hex-fill-3">
+    <canvas width="220" height="150" data-pid="4"></canvas>
+    <div class="pattern-info">
+      <div class="pattern-name"><span class="pattern-dot" style="background:#cc8800"></span>Hex Fill ×3</div>
+      <div class="pattern-desc">The same honeycomb tiling with a mathematically proper 3-coloring — no two adjacent hexes ever share a color. Uses axial coordinates to compute (q + 2r) mod 3 for each cell.</div>
+      <div class="pattern-note"><strong>True 3-coloring:</strong> A hexagonal lattice requires exactly 3 colors for proper coloring. Every hex's 6 neighbors receive all three color values — guaranteed by the axial formula.</div>
+    </div>
+  </div>
+
+  <h3>Arc Patterns</h3>
+
+  <div class="pattern-card" id="card-curved-offsets">
+    <canvas width="220" height="150" data-pid="5"></canvas>
+    <div class="pattern-info">
+      <div class="pattern-name"><span class="pattern-dot" style="background:#7744dd"></span>Curved Offsets</div>
+      <div class="pattern-desc">Arc boundaries alternate direction on every row — one segment bows left, the next bows right. Both edges of each strip mirror each other, creating a symmetric zigzag scallop effect.</div>
+      <div class="pattern-note"><strong>Arc Depth effect:</strong> At low values (5–10) the pattern has a gentle wave. At high values (20–30) it becomes dramatic and interlocking.</div>
+    </div>
+  </div>
+
+  <div class="pattern-card" id="card-scallop-1">
+    <canvas width="220" height="150" data-pid="6"></canvas>
+    <div class="pattern-info">
+      <div class="pattern-name"><span class="pattern-dot" style="background:#cc3388"></span>Scallop — Bead Chain</div>
+      <div class="pattern-desc">Each column boundary maintains one constant bow direction along its entire length. Even columns bow one way, odd columns bow the other. Strips alternate between pinched (hourglass) and barreled (sausage) shapes.</div>
+      <div class="pattern-note"><strong>Distinctive character:</strong> The only pattern where adjacent strips feel structurally different from each other. Try contrasting colors to emphasize the pinch/barrel rhythm.</div>
+    </div>
+  </div>
+
+  <div class="pattern-card" id="card-scallop-2">
+    <canvas width="220" height="150" data-pid="7"></canvas>
+    <div class="pattern-info">
+      <div class="pattern-name"><span class="pattern-dot" style="background:#cc6600"></span>Scallop — Fish Scale</div>
+      <div class="pattern-desc">All arc boundaries bow in the same direction with no alternation. Every strip curves the same way, creating a cascading fish-scale or overlapping roof-tile effect that flows in one direction.</div>
+      <div class="pattern-note"><strong>Direction feel:</strong> The uniform bow creates a strong sense of directional flow. Try Horizontal axis for a different movement direction.</div>
+    </div>
+  </div>
+
+  <div class="pattern-card" id="card-scallop-3">
+    <canvas width="220" height="150" data-pid="8"></canvas>
+    <div class="pattern-info">
+      <div class="pattern-name"><span class="pattern-dot" style="background:#008855"></span>Scallop — Pagoda</div>
+      <div class="pattern-desc">Arc boundaries alternate direction band by band — every column bows the same way within a horizontal band, then the whole pattern reverses in the next band. Strip edges connect with straight lines, creating a stacked crescent or tiered pagoda silhouette.</div>
+      <div class="pattern-note"><strong>Unique feature:</strong> The straight horizontal connectors are intentional — they define the pagoda tiers and distinguish this from Curved Offsets.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="parameters">
+  <h2>Parameters</h2>
+  <div class="section-sub">Every Control Explained</div>
+
+  <!-- Grid -->
+  <div class="param-group">
+    <div class="param-group-title">Grid Shape</div>
+
+    <div class="param-row">
+      <div class="param-key">Cell Width</div>
+      <div class="param-body">
+        <div class="param-title">Horizontal spacing between grid points</div>
+        <div class="param-text">Sets how wide each diamond or triangle cell is in pixels. Smaller values pack more cells across the screen. Larger values make fewer, bigger shapes. <strong>Range 20–100px.</strong></div>
+      </div>
+    </div>
+
+    <div class="param-row">
+      <div class="param-key">Cell Height</div>
+      <div class="param-body">
+        <div class="param-title">Vertical spacing between grid points</div>
+        <div class="param-text">Sets the height of each cell. Matching Width and Height creates square diamond proportions. Making Height larger than Width stretches diamonds vertically into elongated shapes. <strong>Range 20–100px.</strong></div>
+      </div>
+    </div>
+
+    <div class="param-row">
+      <div class="param-key">Dot Size</div>
+      <div class="param-body">
+        <div class="param-title">Center dot density — 0 means no dots</div>
+        <div class="param-text">Places a filled circle at the center of each fill region. <strong>0 = no dots.</strong> Higher values make smaller dots relative to the cell. At 1 the dot nearly fills the region; at 6 it's a small accent mark. The dot color is set separately below.</div>
+        <div class="param-text" style="margin-top:4px;">Triangle Fill uses the triangle's <em>inradius</em> (largest inscribed circle) as the dot size reference rather than the diamond formula.</div>
+      </div>
+    </div>
+
+    <div class="param-row">
+      <div class="param-key">Arc Depth <span class="param-tag">arc patterns only</span></div>
+      <div class="param-body">
+        <div class="param-title">How much arc boundaries curve</div>
+        <div class="param-text">Controls the perpendicular displacement of each arc boundary from the straight line between two grid points. <strong>0 = perfectly straight lines</strong> (same as Offset Dots). Higher values produce stronger, more dramatic curves.</div>
+        <div class="arc-diagram">
+          <svg viewBox="0 0 540 90" xmlns="http://www.w3.org/2000/svg">
+            <!-- V=0 -->
+            <line x1="20" y1="45" x2="140" y2="45" stroke="#4169e1" stroke-width="2.5" stroke-dasharray="5,3"/>
+            <!-- V=10 -->
+            <path d="M180,45 C207,18 233,18 260,45" fill="none" stroke="#7744dd" stroke-width="2.5"/>
+            <!-- V=22 -->
+            <path d="M300,45 C340,-5 380,-5 420,45" fill="none" stroke="#cc3388" stroke-width="2.5"/>
+            <!-- dots -->
+            <circle cx="20" cy="45" r="4" fill="#4169e1"/><circle cx="140" cy="45" r="4" fill="#4169e1"/>
+            <circle cx="180" cy="45" r="4" fill="#7744dd"/><circle cx="260" cy="45" r="4" fill="#7744dd"/>
+            <circle cx="300" cy="45" r="4" fill="#cc3388"/><circle cx="420" cy="45" r="4" fill="#cc3388"/>
+            <!-- labels -->
+            <text x="80" y="72" text-anchor="middle" fill="#7070a0" font-size="12" font-family="JetBrains Mono,monospace">V = 0</text>
+            <text x="220" y="72" text-anchor="middle" fill="#7070a0" font-size="12" font-family="JetBrains Mono,monospace">V = 10</text>
+            <text x="360" y="72" text-anchor="middle" fill="#7070a0" font-size="12" font-family="JetBrains Mono,monospace">V = 22</text>
+          </svg>
+        </div>
+        <div class="param-text">A good starting range is <strong>8–15</strong> for subtle curves. Above 25 arcs become bold and may overlap adjacent strips at small cell sizes.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="param-group">
+    <div class="param-group-title">Layout</div>
+
+    <div class="param-row">
+      <div class="param-key">Padding</div>
+      <div class="param-body">
+        <div class="param-title">Empty border around the pattern</div>
+        <div class="param-text">Sets a pixel gap between the canvas edge and where the pattern begins. <strong>0 = pattern fills edge to edge.</strong> For screen use, 0–20 is typical. When printing, a larger padding acts as a margin on the page.</div>
+      </div>
+    </div>
+
+    <div class="param-row">
+      <div class="param-key">Axis</div>
+      <div class="param-body">
+        <div class="param-title">Vertical or Horizontal fill orientation</div>
+        <div class="param-text"><strong>Vertical</strong> — fills run in columns top to bottom. <strong>Horizontal</strong> — fills run in rows left to right. This is a 90° rotation of the same pattern; all bow rules rotate with it.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colors -->
+  <div class="param-group">
+    <div class="param-group-title">Colors</div>
+
+    <div class="param-row">
+      <div class="param-key">Color 1</div>
+      <div class="param-body">
+        <div class="param-title">Fill for even strips (1st, 3rd, 5th…)</div>
+        <div class="param-text">The primary fill color. In Vertical axis, this fills the 1st column strip from the left. Use the color picker or type a hex value.</div>
+      </div>
+    </div>
+
+    <div class="param-row">
+      <div class="param-key">Color 2</div>
+      <div class="param-body">
+        <div class="param-title">Fill for odd strips (2nd, 4th, 6th…)</div>
+        <div class="param-text">The alternating fill color. Contrasting colors emphasize the pattern structure; similar colors create a more unified, tonal effect.</div>
+      </div>
+    </div>
+
+    <div class="param-row">
+      <div class="param-key">Color 3</div>
+      <div class="param-body">
+        <div class="param-title">C3 — role depends on pattern</div>
+        <div class="param-text">C3 serves a different purpose depending on which pattern is selected:</div>
+        <div class="param-text" style="margin-top:6px;"><strong>Arc patterns &amp; Sine Offsets</strong> — center dot fill color. Only visible when Dot Size is greater than 0. White on dark fills creates a bead effect; matching Color 1 or 2 creates subtle embossed dots.</div>
+        <div class="param-text" style="margin-top:6px;"><strong>Triangle Fill</strong> — edge triangle color. Fills the narrow triangles at the left and right borders (NS) or top and bottom borders (EW). Match C1 or C2 to hide them; use strong contrast to frame the pattern. Triangle Fill uses a separate <strong>Dot Color (Cdot)</strong> for its center dots.</div>
+        <div class="param-text" style="margin-top:6px;"><strong>Hex Fill ×3</strong> — third hex fill color. Used alongside C1 and C2 so no two adjacent hexagons share a color. Hex Fill ×3 also has a separate <strong>Dot Color (Cdot)</strong> — giving it four color parameters in total: three fills plus one dot color.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Triangle Fill specific -->
+  <div class="param-group">
+    <div class="param-group-title">Triangle Fill — additional colors</div>
+
+    <div class="param-row">
+      <div class="param-key">Down / Right color</div>
+      <div class="param-body">
+        <div class="param-title">Downward-pointing (Vertical) or rightward-pointing (Horizontal) triangles</div>
+        <div class="param-text">The majority fill triangle type. In Vertical axis these point downward (▽).</div>
+      </div>
+    </div>
+
+    <div class="param-row">
+      <div class="param-key">Up / Left color</div>
+      <div class="param-body">
+        <div class="param-title">Upward-pointing (Vertical) or leftward-pointing (Horizontal) triangles</div>
+        <div class="param-text">The alternating fill triangle type. In Vertical axis these point upward (△).</div>
+      </div>
+    </div>
+
+    <div class="param-row">
+      <div class="param-key">Edge color</div>
+      <div class="param-body">
+        <div class="param-title">Narrow triangles at the left and right edges</div>
+        <div class="param-text">The offset grid leaves narrow triangular gaps at the left and right borders. These get their own color. <strong>Match Color 1 or 2 to hide them. Use a strong contrast to create a decorative frame.</strong></div>
+      </div>
+    </div>
+
+    <div class="param-row">
+      <div class="param-key">Show Grid Dots</div>
+      <div class="param-body">
+        <div class="param-title">Small markers at every grid intersection</div>
+        <div class="param-text">Draws 3.5px circles at each offset grid point. Useful for checking cell proportions or for a design aesthetic where the underlying grid is visible.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hex Fill -->
+  <div class="param-group">
+    <div class="param-group-title">Hex Fill ×2 and ×3 — parameters</div>
+
+    <div class="param-row">
+      <div class="param-key">Cell size</div>
+      <div class="param-body">
+        <div class="param-title">Horizontal distance between hex centers (W)</div>
+        <div class="param-text">Controls the size of each hexagon. H is derived automatically as W × √3 to keep hexagons regular. Only complete hexagons are drawn — partial hexagons at the edges are always skipped.</div>
+      </div>
+    </div>
+
+    <div class="param-row">
+      <div class="param-key">C1 · C2 / C1 · C2 · C3</div>
+      <div class="param-body">
+        <div class="param-title">Hex fill colors</div>
+        <div class="param-text"><strong>Hex Fill ×2</strong> alternates two colors using a row + column offset. Some diagonal neighbors may share a color, creating a zigzag stripe rhythm.<br><br><strong>Hex Fill ×3</strong> uses a mathematically proper 3-coloring via axial coordinates — no two adjacent hexagons ever share a color. Requires three distinct fill colors.</div>
+      </div>
+    </div>
+
+    <div class="param-row">
+      <div class="param-key">Dot color</div>
+      <div class="param-body">
+        <div class="param-title">Center dot fill — fourth color in Hex Fill ×3</div>
+        <div class="param-text">Hex Fill ×3 has four color parameters total: C1, C2, C3 for hex fills plus a separate Dot Color (Cdot). Set Dot Size to 0 to hide dots entirely.</div>
+      </div>
+    </div>
+
+    <div class="param-row">
+      <div class="param-key">Show edges</div>
+      <div class="param-body">
+        <div class="param-title">Thin stroke on hex cell boundaries</div>
+        <div class="param-text">Draws a faint outline around each hexagon, revealing the underlying honeycomb structure. Turn off for clean filled output.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Display -->
+  <div class="param-group">
+    <div class="param-group-title">Display Overlays <span class="param-tag">arc patterns only</span></div>
+
+    <div class="param-row">
+      <div class="param-key">Show Lines</div>
+      <div class="param-body">
+        <div class="param-title">Overlay arc boundaries as thin black lines</div>
+        <div class="param-text">Draws each arc as a thin black line on top of the fills. Useful for understanding the structure of a pattern, checking bow alignment, or as a deliberate design element. Turn off for clean final output.</div>
+      </div>
+    </div>
+
+    <div class="param-row">
+      <div class="param-key">Show Grid Points</div>
+      <div class="param-body">
+        <div class="param-title">Reveal the underlying offset dot grid</div>
+        <div class="param-text">Shows the grid of offset dots that the pattern is constructed from — small black circles at every grid intersection. Each row is offset by half a cell width from the row above. Useful for understanding how the diamond grid works.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="output">
+  <h2>Output</h2>
+  <div class="section-sub">Five Ways to Get Your Design Out</div>
+
+  <div class="output-card">
+    <div class="output-icon">↗</div>
+    <div>
+      <div class="output-title">Open in new window</div>
+      <div class="output-text">Renders the pattern at <strong>1920 × 1080px</strong> and opens it as a PNG image in a new browser tab. Right-click the image and choose <em>Save image as…</em> to download it. The pattern fills the full canvas with the same parameters you see in the preview — same W, H, colors, and padding.</div>
+    </div>
+  </div>
+
+  <div class="output-card">
+    <div class="output-icon">⎙</div>
+    <div>
+      <div class="output-title">Print / save PDF</div>
+      <div class="output-text">Renders the pattern at <strong>US Letter size (8.5" × 11")</strong> and opens your browser's print dialog. Choose <em>Save as PDF</em> to get a print-ready file, or send directly to a printer. The pattern uses the padding you set as the page margin.</div>
+    </div>
+  </div>
+
+  <div class="output-card">
+    <div class="output-icon">↓</div>
+    <div>
+      <div class="output-title">Export preset</div>
+      <div class="output-text">Downloads all current parameter values for the selected pattern as a <strong>JSON file</strong> (e.g. <code>scallop-1-preset.json</code>). Use this to save a combination you want to return to, share settings with someone else, or build a personal library of color palettes.</div>
+    </div>
+  </div>
+
+  <div class="output-card">
+    <div class="output-icon">↑</div>
+    <div>
+      <div class="output-title">Import preset</div>
+      <div class="output-text">Loads parameters from a previously exported JSON file. The pattern will switch to match the preset immediately. Any parameter not present in the file falls back to the pattern's default value.</div>
+    </div>
+  </div>
+
+  <div class="output-card">
+    <div class="output-icon">↺</div>
+    <div>
+      <div class="output-title">Reset to defaults</div>
+      <div class="output-text">Restores all parameters for the current pattern to their original factory values. Your changes are cleared and the last-saved state is overwritten. <strong>This cannot be undone</strong> — export a preset first if you want to keep your current settings.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="workflow">
+  <h2>Workflow Tips</h2>
+  <div class="section-sub">Getting the Most out of the Studio</div>
+
+  <h3>Start with Cell Size</h3>
+  <p>Cell Width and Height define everything else. Get the grid density right before touching colors or arc depth. A good starting density for screen viewing is <strong>W=54, H=54</strong>. For print at US Letter, values around <strong>W=40–60</strong> give 10–15 columns — enough to show the pattern character clearly.</p>
+
+  <h3>Color Contrast Drives Impact</h3>
+  <p>High contrast between Color 1 and Color 2 emphasizes the strip structure. Low contrast creates a more textile-like, tonal result. <strong>Bead Chain (Scallop 1)</strong> benefits most from contrast because the pinch/barrel alternation becomes obvious. <strong>Fish Scale (Scallop 2)</strong> works well with analogous colors — the directional flow reads clearly even with similar hues.</p>
+
+  <h3>Arc Depth Sweet Spots by Pattern</h3>
+  <p><strong>Curved Offsets:</strong> 8–12 for gentle; 18–25 for dramatic. <strong>Bead Chain:</strong> 10–15 — beyond 20 the hourglass pinch can close off entirely. <strong>Fish Scale:</strong> 10–18. <strong>Pagoda:</strong> 8–14 — the straight horizontal borders mean arc depth only affects the vertical columns, so moderate values work best.</p>
+
+  <h3>Axis as a Design Tool</h3>
+  <p>Don't just use Vertical by default. Horizontal axis gives Fish Scale a completely different feel — it reads as overlapping roof tiles rather than fish scales. For Pagoda, Horizontal axis creates stacked columns rather than rows, which has a different architectural quality.</p>
+
+  <h3>Use Show Lines to Understand a Pattern</h3>
+  <p>If a pattern's structure isn't clear, turn on <strong>Show Lines</strong>. The thin black arc overlay reveals exactly how the boundaries are constructed. Turn it off for final output.</p>
+
+  <h3>Save Presets as You Explore</h3>
+  <p>Whenever you find a color combination you like, export a preset before changing anything. The studio saves your last-used state automatically, but export gives you a permanent named file you can return to any time.</p>
+
+  <div class="tip"><strong>Printing tip:</strong> Set Padding to 40–54px before printing — this gives a comfortable white margin on the page. The pattern won't change visually on screen, but the printed output will have clean borders.</div>
+</section>
+
+</main>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════════════════════
+// Drawing engine — included to render gallery thumbnails
+// ═══════════════════════════════════════════════════════════════════
+function buildNS(b,W,H){const dots=[];let row=0,y=b.y;while(y<=b.y+b.h+1){const x0=b.x+(row%2?W/2:0),rd=[];for(let x=x0;x<=b.x+b.w+1;x+=W)rd.push([x,y]);dots.push(rd);y+=H/2;row++;}const mc=Math.min(...dots.map(r=>r.length));return{dots,vc:Array.from({length:mc},(_,i)=>i)};}
+function buildEW(b,W,H){const dots=[];let col=0,x=b.x;while(x<=b.x+b.w+1){const y0=b.y+(col%2?H/2:0),cd=[];for(let y=y0;y<=b.y+b.h+1;y+=H)cd.push([x,y]);dots.push(cd);x+=W/2;col++;}const mr=Math.min(...dots.map(c=>c.length));return{dots,vr:Array.from({length:mr},(_,i)=>i),nc:dots.length};}
+const cPts=(d,c)=>d.reduce((a,r)=>c<r.length?[...a,r[c]]:a,[]);
+const rPts=(d,r)=>d.reduce((a,c)=>r<c.length?[...a,c[r]]:a,[]);
+function dcNS(ctx,dots,vc,W,H,D,V,C){if(!D)return;const r=Math.max(1,(W*H)/(2*Math.sqrt(W*W+H*H)*D));ctx.fillStyle=C;for(let ci=0;ci<vc.length-1;ci++){const cl=vc[ci],cr=vc[ci+1];for(let row=0;row<dots.length-1;row++){if(cl<dots[row].length&&cr<dots[row].length&&cl<dots[row+1].length&&cr<dots[row+1].length){const[[x1,y1],[x2,y2],[x3,y3],[x4,y4]]=[dots[row][cl],dots[row][cr],dots[row+1][cl],dots[row+1][cr]];ctx.beginPath();ctx.arc((x1+x2+x3+x4)/4,(y1+y2+y3+y4)/4,r,0,Math.PI*2);ctx.fill();}}}}
+function dcEW(ctx,dots,vr,W,H,D,V,C){if(!D)return;const r=Math.max(1,(W*H)/(2*Math.sqrt(W*W+H*H)*D));ctx.fillStyle=C;for(let ci=0;ci<dots.length-1;ci++)for(let ri=0;ri<vr.length-1;ri++){const rt=vr[ri],rb=vr[ri+1];if(rt<dots[ci].length&&rb<dots[ci].length&&rt<dots[ci+1].length&&rb<dots[ci+1].length){const[[x1,y1],[x2,y2],[x3,y3],[x4,y4]]=[dots[ci][rt],dots[ci][rb],dots[ci+1][rt],dots[ci+1][rb]];ctx.beginPath();ctx.arc((x1+x2+x3+x4)/4,(y1+y2+y3+y4)/4,r,0,Math.PI*2);ctx.fill();}}}
+function arcP(p,x1,y1,x2,y2,bow){if(!bow){p.lineTo(x2,y2);return;}const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);if(!len){p.lineTo(x2,y2);return;}const px=-dy/len,py=dx/len,qx=(x1+x2)/2+px*bow,qy=(y1+y2)/2+py*bow;p.bezierCurveTo(x1+(2/3)*(qx-x1),y1+(2/3)*(qy-y1),x2+(2/3)*(qx-x2),y2+(2/3)*(qy-y2),x2,y2);}
+function nsStrip(lp,rp,lbf,rbf,hb){const p=new Path2D();p.moveTo(...lp[0]);for(let s=0;s<lp.length-1;s++)arcP(p,...lp[s],...lp[s+1],lbf(s));arcP(p,...lp[lp.length-1],...rp[rp.length-1],hb);for(let s=rp.length-1;s>0;s--)arcP(p,...rp[s],...rp[s-1],-rbf(s-1));arcP(p,...rp[0],...lp[0],-hb);p.closePath();return p;}
+function ewStrip(tp,bp,tbf,bbf,vb){const p=new Path2D();p.moveTo(...tp[0]);for(let s=0;s<tp.length-1;s++)arcP(p,...tp[s],...tp[s+1],tbf(s));arcP(p,...tp[tp.length-1],...bp[bp.length-1],vb);for(let s=bp.length-1;s>0;s--)arcP(p,...bp[s],...bp[s-1],-bbf(s-1));arcP(p,...bp[0],...tp[0],-vb);p.closePath();return p;}
+function clip(ctx,b,fn){ctx.save();ctx.beginPath();ctx.rect(b.x,b.y,b.w,b.h);ctx.clip();fn();ctx.restore();}
+function xb(b,W,H){return{x:b.x-W,y:b.y-H,w:b.w+2*W,h:b.h+2*H};}
+function gbNS(b,V,H){const iy=Math.max(H/2,Math.ceil(Math.max(V,1)/(H/2))*(H/2));return{x:b.x,y:b.y+iy,w:b.w,h:Math.max(H,b.h-2*iy)};}
+function gbEW(b,V,W){const ix=Math.max(W/2,Math.ceil(Math.max(V,1)/(W/2))*(W/2));return{x:b.x+ix,y:b.y,w:Math.max(W,b.w-2*ix),h:b.h};}
+function arcOK(lp,rp,V,b){const lx=Math.min(...lp.map(([x])=>x)),rx=Math.max(...rp.map(([x])=>x));const y0=lp[0][1],yN=lp[lp.length-1][1];return lx-V>=b.x&&rx+V<=b.x+b.w&&y0-V>=b.y&&yN+V<=b.y+b.h;}
+function arcOKew(tp,bp,V,b){const ty=Math.min(...tp.map(([,y])=>y)),by2=Math.max(...bp.map(([,y])=>y));const x0=tp[0][0],xN=tp[tp.length-1][0];return ty-V>=b.y&&by2+V<=b.y+b.h&&x0-V>=b.x&&xN+V<=b.x+b.w;}
+
+function rDots(ctx,b,p){const{W,H,C1,C2,D,C3,axis}=p;clip(ctx,b,()=>{if(axis==='NS'){const{dots,vc}=buildNS(b,W,H);for(let ci=0;ci<vc.length-1;ci++){const lp=cPts(dots,vc[ci]),rp=cPts(dots,vc[ci+1]);if(lp.length<2||rp.length<2)continue;if(!arcOK(lp,rp,0,b))continue;const path=new Path2D();path.moveTo(...lp[0]);lp.slice(1).forEach(q=>path.lineTo(...q));[...rp].reverse().forEach(q=>path.lineTo(...q));path.closePath();ctx.fillStyle=ci%2?C2:C1;ctx.fill(path);}dcNS(ctx,dots,vc,W,H,D,0,C3);}else{const{dots,vr,nc}=buildEW(b,W,H);for(let ri=0;ri<vr.length-1;ri++){const tp=rPts(dots,vr[ri]),bp=rPts(dots,vr[ri+1]);if(tp.length<2||bp.length<2)continue;if(!arcOKew(tp,bp,0,b))continue;const path=new Path2D();path.moveTo(...tp[0]);tp.slice(1).forEach(q=>path.lineTo(...q));[...bp].reverse().forEach(q=>path.lineTo(...q));path.closePath();ctx.fillStyle=ri%2?C2:C1;ctx.fill(path);}dcEW(ctx,dots,vr,W,H,D,0,C3);}});}
+function rNewOff(ctx,b,p){const{W,H,C1,C2,D,C3,V=0,axis}=p;const bf=s=>s%2===0?V:-V;clip(ctx,b,()=>{if(axis==='NS'){const{dots,vc}=buildNS(gbNS(b,V,H),W,H);for(let ci=0;ci<vc.length-1;ci++){const lp=cPts(dots,vc[ci]),rp=cPts(dots,vc[ci+1]);if(lp.length<2||rp.length<2)continue;if(!arcOK(lp,rp,V,b))continue;ctx.fillStyle=ci%2?C2:C1;ctx.fill(nsStrip(lp,rp,bf,bf,ci%2===0?V:-V));}dcNS(ctx,dots,vc,W,H,D,V,C3);}else{const{dots,vr}=buildEW(gbEW(b,V,W),W,H);for(let ri=0;ri<vr.length-1;ri++){const tp=rPts(dots,vr[ri]),bp=rPts(dots,vr[ri+1]);if(tp.length<2||bp.length<2)continue;if(!arcOKew(tp,bp,V,b))continue;ctx.fillStyle=ri%2?C2:C1;ctx.fill(ewStrip(tp,bp,bf,bf,ri%2===0?V:-V));}dcEW(ctx,dots,vr,W,H,D,V,C3);}});}
+function rSc1(ctx,b,p){const{W,H,C1,C2,D,C3,V=0,axis}=p;clip(ctx,b,()=>{if(axis==='NS'){const{dots,vc}=buildNS(gbNS(b,V,H),W,H);for(let ci=0;ci<vc.length-1;ci++){const cl=vc[ci],cr=vc[ci+1],lp=cPts(dots,cl),rp=cPts(dots,cr);if(lp.length<2||rp.length<2)continue;if(!arcOK(lp,rp,V,b))continue;const bl=cl%2===0?V:-V,br=cr%2===0?V:-V;ctx.fillStyle=ci%2?C2:C1;ctx.fill(nsStrip(lp,rp,_=>bl,_=>br,bl));}dcNS(ctx,dots,vc,W,H,D,V,C3);}else{const{dots,vr}=buildEW(gbEW(b,V,W),W,H);for(let ri=0;ri<vr.length-1;ri++){const rt=vr[ri],rb=vr[ri+1],tp=rPts(dots,rt),bp=rPts(dots,rb);if(tp.length<2||bp.length<2)continue;if(!arcOKew(tp,bp,V,b))continue;const bt=rt%2===0?V:-V,bb=rb%2===0?V:-V;ctx.fillStyle=ri%2?C2:C1;ctx.fill(ewStrip(tp,bp,_=>bt,_=>bb,bt));}dcEW(ctx,dots,vr,W,H,D,V,C3);}});}
+function rSc2(ctx,b,p){const{W,H,C1,C2,D,C3,V=0,axis}=p;clip(ctx,b,()=>{if(axis==='NS'){const{dots,vc}=buildNS(gbNS(b,V,H),W,H);for(let ci=0;ci<vc.length-1;ci++){const lp=cPts(dots,vc[ci]),rp=cPts(dots,vc[ci+1]);if(lp.length<2||rp.length<2)continue;if(!arcOK(lp,rp,V,b))continue;ctx.fillStyle=ci%2?C2:C1;ctx.fill(nsStrip(lp,rp,_=>V,_=>V,V));}dcNS(ctx,dots,vc,W,H,D,V,C3);}else{const{dots,vr}=buildEW(gbEW(b,V,W),W,H);for(let ri=0;ri<vr.length-1;ri++){const tp=rPts(dots,vr[ri]),bp=rPts(dots,vr[ri+1]);if(tp.length<2||bp.length<2)continue;if(!arcOKew(tp,bp,V,b))continue;ctx.fillStyle=ri%2?C2:C1;ctx.fill(ewStrip(tp,bp,_=>V,_=>V,V));}dcEW(ctx,dots,vr,W,H,D,V,C3);}});}
+function rSc3(ctx,b,p){const{W,H,C1,C2,D,C3,V=0,axis}=p;const bf=s=>s%2===0?V:-V;clip(ctx,b,()=>{if(axis==='NS'){const{dots,vc}=buildNS(gbNS(b,V,H),W,H);for(let ci=0;ci<vc.length-1;ci++){const lp=cPts(dots,vc[ci]),rp=cPts(dots,vc[ci+1]);if(lp.length<2||rp.length<2)continue;if(!arcOK(lp,rp,V,b))continue;ctx.fillStyle=ci%2?C2:C1;ctx.fill(nsStrip(lp,rp,bf,bf,0));}dcNS(ctx,dots,vc,W,H,D,V,C3);}else{const{dots,vr}=buildEW(gbEW(b,V,W),W,H);for(let ri=0;ri<vr.length-1;ri++){const tp=rPts(dots,vr[ri]),bp=rPts(dots,vr[ri+1]);if(tp.length<2||bp.length<2)continue;if(!arcOKew(tp,bp,V,b))continue;ctx.fillStyle=ri%2?C2:C1;ctx.fill(ewStrip(tp,bp,bf,bf,0));}dcEW(ctx,dots,vr,W,H,D,V,C3);}});}
+function rTri(ctx,b,p){const{W,H,C1,C2,C3,axis}=p;const HS=H/2,WS=W/2;const tri=(ax,ay,bx,by,ex,ey,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.lineTo(ex,ey);ctx.closePath();ctx.fill();};clip(ctx,b,()=>{if(axis==='NS'){const dx=(r,i)=>b.x+i*W+(r%2?WS:0),dy=r=>b.y+r*HS;const nr=Math.floor(b.h/HS)+1,ne=Math.floor(b.w/W)+1,no=ne-1;for(let r=0;r<nr-1;r++){const y0=dy(r),y1=dy(r+1);if(r%2===0){for(let i=0;i<ne-1;i++)tri(dx(r,i),y0,dx(r,i+1),y0,dx(r+1,i),y1,C1);for(let i=0;i<no-1;i++)tri(dx(r+1,i),y1,dx(r,i+1),y0,dx(r+1,i+1),y1,C2);}else{for(let i=0;i<no;i++)tri(dx(r+1,i),y1,dx(r,i),y0,dx(r+1,i+1),y1,C2);for(let i=0;i<no-1;i++)tri(dx(r,i),y0,dx(r,i+1),y0,dx(r+1,i+1),y1,C1);}}for(let r=0;r<nr-2;r+=2)tri(b.x,dy(r),b.x+WS,dy(r+1),b.x,dy(r+2),C3);const xre=b.x+(ne-1)*W,xro=b.x+(no-1)*W+WS;for(let r=0;r<nr-2;r+=2)tri(xre,dy(r),xro,dy(r+1),xre,dy(r+2),C3);}});}
+function rSine(ctx,b,p){const{W,H,C1,C2,D,C3,axis}=p;const NS=32;clip(ctx,b,()=>{if(axis==='NS'){const cxs=[];for(let x=b.x;x<=b.x+b.w+1;x+=W)cxs.push(x);const lastVertY=b.y+Math.floor(b.h/(H/2))*(H/2);const dys=[];for(let y=b.y;y<=lastVertY+0.5;y+=H/2)dys.push(y);const cfn=(xc,ci,y)=>xc+(W/2)*Math.cos(2*Math.PI*(y-b.y)/H+Math.PI*ci);const bpts=(xc,ci)=>{const pts=[];for(let sg=0;sg<dys.length-1;sg++){const y0=dys[sg],y1=dys[sg+1];for(let i=0;i<NS;i++){const t=i/NS,y=y0+t*(y1-y0);pts.push([cfn(xc,ci,y),y]);}}pts.push([cfn(xc,ci,dys[dys.length-1]),dys[dys.length-1]]);return pts;};for(let ci=0;ci<cxs.length-1;ci++){if(cxs[ci]-W/2<b.x||cxs[ci+1]+W/2>b.x+b.w)continue;const lp=bpts(cxs[ci],ci),rp=bpts(cxs[ci+1],ci+1);ctx.fillStyle=ci%2?C2:C1;const path=new Path2D();path.moveTo(...lp[0]);lp.slice(1).forEach(q=>path.lineTo(...q));path.lineTo(...rp[rp.length-1]);for(let i=rp.length-2;i>=0;i--)path.lineTo(...rp[i]);path.closePath();ctx.fill(path);}if(D>0){const r=Math.max(1,(H/4)*.7/D);ctx.fillStyle=C3;for(let ci=0;ci<cxs.length-1;ci++){if(cxs[ci]-W/2<b.x||cxs[ci+1]+W/2>b.x+b.w)continue;for(let ri=0;ri<dys.length-1;ri++){ctx.beginPath();ctx.arc((cxs[ci]+cxs[ci+1])/2,(dys[ri]+dys[ri+1])/2,r,0,Math.PI*2);ctx.fill();}}}}}});}
+
+function hexCenters(bbox,W){const rowStep=W*Math.sqrt(3)/2;const centers=[];let row=0,y=bbox.y-W;while(y<=bbox.y+bbox.h+W){const x0=bbox.x-W+(row%2?W/2:0);let col=0,x=x0;while(x<=bbox.x+bbox.w+W){centers.push({x,y,row,col});x+=W;col++;}y+=rowStep;row++;}return centers;}
+function hexOK(cx,cy,R,b){for(let k=0;k<6;k++){const a=k*Math.PI/3,vx=cx+R*Math.sin(a),vy=cy-R*Math.cos(a);if(vx<b.x||vx>b.x+b.w||vy<b.y||vy>b.y+b.h)return false;}return true;}
+function drawHex(ctx,b,W,colorFn,colors,D,Cdot,showEdges){const R=W/Math.sqrt(3);clip(ctx,b,()=>{const ok=hexCenters(b,W).filter(({x,y})=>hexOK(x,y,R,b));ok.forEach(({x,y,row,col})=>{ctx.fillStyle=colors[colorFn(row,col)];ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3,vx=x+R*Math.sin(a),vy=y-R*Math.cos(a);k===0?ctx.moveTo(vx,vy):ctx.lineTo(vx,vy);}ctx.closePath();ctx.fill();if(showEdges){ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=0.7;ctx.stroke();}});if(D>0){const dr=Math.max(1,(W/2)/D);ctx.fillStyle=Cdot;ok.forEach(({x,y})=>{ctx.beginPath();ctx.arc(x,y,dr,0,Math.PI*2);ctx.fill();})}});}
+function rHex2(ctx,b,p){const{W,C1,C2,D=2,Cdot='#1a1a40',showEdges=false}=p;drawHex(ctx,b,W,(row,col)=>(row+col)%2,[C1,C2],D,Cdot,showEdges);}
+function rHex3(ctx,b,p){const{W,C1,C2,C3,D=2,Cdot='#1a1a40',showEdges=false}=p;const cf=(row,col)=>{const q=col-Math.floor((row-(row&1))/2);return((q+2*row)%3+3)%3;};drawHex(ctx,b,W,cf,[C1,C2,C3],D,Cdot,showEdges);}
+
+const DEFAULTS=[
+  {fn:rDots,  def:{W:38,H:38,padding:0,axis:'NS',C1:'#4169e1',C2:'#87ceeb',D:2,C3:'#ffffff'}},
+  {fn:rTri,   def:{W:38,H:38,padding:0,axis:'NS',C1:'#4169e1',C2:'#87ceeb',C3:'#cc2200'}},
+  {fn:rSine,  def:{W:38,H:38,padding:0,axis:'NS',C1:'#00aa88',C2:'#aaeedd',D:2,C3:'#ffffff'}},
+  {fn:rHex2,  def:{W:38,padding:0,C1:'#4169e1',C2:'#87ceeb',D:2,Cdot:'#1a1a40',showEdges:false}},
+  {fn:rHex3,  def:{W:38,padding:0,C1:'#4169e1',C2:'#87ceeb',C3:'#ffffff',D:2,Cdot:'#1a1a40',showEdges:false}},
+  {fn:rNewOff,def:{W:38,H:38,padding:0,axis:'NS',C1:'#7744dd',C2:'#ccaaff',D:2,C3:'#ffffff',V:10}},
+  {fn:rSc1,   def:{W:38,H:38,padding:0,axis:'NS',C1:'#cc3388',C2:'#ffaacc',D:2,C3:'#ffffff',V:10}},
+  {fn:rSc2,   def:{W:38,H:38,padding:0,axis:'NS',C1:'#cc6600',C2:'#ffcc77',D:2,C3:'#ffffff',V:12}},
+  {fn:rSc3,   def:{W:38,H:38,padding:0,axis:'NS',C1:'#008855',C2:'#66ddaa',D:2,C3:'#ffffff',V:10}},
+];
+
+document.querySelectorAll('canvas[data-pid]').forEach(cv=>{
+  const pid=Number(cv.getAttribute('data-pid'));
+  const{fn,def}=DEFAULTS[pid];
+  const W=cv.getAttribute('width')||220, H=cv.getAttribute('height')||150;
+  cv.width=Number(W); cv.height=Number(H);
+  cv.style.width=W+'px'; cv.style.height=H+'px';
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height);
+  try{fn(ctx,{x:4,y:4,w:cv.width-8,h:cv.height-8},def);}catch(e){console.error(e);}
+});
+</script>
+</body>
+</html>
