@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fun By Mitch</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:#080810;color:#f0eff8;
+  font-family:'Nunito',sans-serif;
+  min-height:100vh;
+}
+.banner{
+  text-align:center;
+  padding:48px 0 0;
+  font-family:'JetBrains Mono',monospace;
+  font-size:36px;letter-spacing:.08em;
+  color:#c8ff3a;font-weight:600;
+}
+.cards{
+  display:flex;flex-wrap:wrap;justify-content:center;
+  gap:16px;padding:40px 24px 48px;
+  max-width:960px;margin:0 auto;
+}
+a.card{
+  display:block;text-decoration:none;color:inherit;
+  background:#0f0f1a;border:1px solid #1e1e30;
+  border-radius:12px;overflow:hidden;
+  width:280px;
+  transition:transform .15s,border-color .15s;
+}
+a.card:hover{transform:translateY(-3px);border-color:#2e2e50;}
+canvas{display:block;width:280px;height:158px;}
+.card-info{padding:16px 18px 20px;}
+.card-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+  margin-bottom:6px;font-weight:600;
+}
+.card-title{font-size:1.25rem;font-weight:800;margin-bottom:6px;}
+.card-desc{font-size:12px;color:#6a6982;line-height:1.6;}
+
+.card-studio .card-tag{color:#c8ff3a;}
+.card-guide  .card-tag{color:#00e5c0;}
+.card-game   .card-tag{color:#c8c0ff;}
+</style>
+</head>
+<body>
+
+<div class="banner">Fun By Mitch</div>
+
+<div class="cards">
+
+  <a target="_blank" class="card card-studio" href="./offset-dot-studio.html">
+    <canvas id="cv-studio" width="560" height="316"></canvas>
+    <div class="card-info">
+      <div class="card-tag">Design Tool</div>
+      <div class="card-title">Offset Dot Studio</div>
+      <div class="card-desc">9 geometric patterns — design, adjust, export PNG or PDF.</div>
+    </div>
+  </a>
+
+  <a target="_blank" class="card card-guide" href="./offset-dot-studio-guide.html">
+    <canvas id="cv-guide" width="560" height="316"></canvas>
+    <div class="card-info">
+      <div class="card-tag">Reference</div>
+      <div class="card-title">Pattern Guide</div>
+      <div class="card-desc">Every pattern explained with live thumbnails and parameter reference.</div>
+    </div>
+  </a>
+
+  <a target="_blank" class="card card-game" href="./matching-game.html">
+    <canvas id="cv-game" width="560" height="316"></canvas>
+    <div class="card-info">
+      <div class="card-tag">Game</div>
+      <div class="card-title">Pattern Match</div>
+      <div class="card-desc">Memory matching game built from the same pattern tiles.</div>
+    </div>
+  </a>
+
+</div>
+
+<script>
+// Minimal drawing engine — render once, no ResizeObserver
+function arcP(p,x1,y1,x2,y2,bow){
+  if(!bow){p.lineTo(x2,y2);return;}
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+  if(!len){p.lineTo(x2,y2);return;}
+  const px=-dy/len,py=dx/len;
+  const qx=(x1+x2)/2+px*bow,qy=(y1+y2)/2+py*bow;
+  p.bezierCurveTo(x1+(2/3)*(qx-x1),y1+(2/3)*(qy-y1),x2+(2/3)*(qx-x2),y2+(2/3)*(qy-y2),x2,y2);
+}
+function buildNS(b,W,H){
+  const dots=[];let row=0,y=b.y;
+  while(y<=b.y+b.h+1){
+    const x0=b.x+(row%2?W/2:0),rd=[];
+    for(let x=x0;x<=b.x+b.w+1;x+=W)rd.push([x,y]);
+    dots.push(rd);y+=H/2;row++;
+  }
+  if(!dots.length)return{dots:[],vc:[]};
+  const mc=Math.min(...dots.map(r=>r.length));
+  return{dots,vc:Array.from({length:Math.max(0,mc)},(_,i)=>i)};
+}
+function gbNS(b,V,H){const iy=Math.max(H/2,Math.ceil(Math.max(V,1)/(H/2))*(H/2));return{x:b.x,y:b.y+iy,w:b.w,h:Math.max(H,b.h-2*iy)};}
+function cPts(d,c){return d.reduce((a,r)=>c<r.length?[...a,r[c]]:a,[]);}
+function arcOK(lp,rp,V,b){
+  if(lp.length<2||rp.length<2)return false;
+  const lx=Math.min(...lp.map(([x])=>x)),rx=Math.max(...rp.map(([x])=>x));
+  const y0=lp[0][1],yN=lp[lp.length-1][1];
+  return lx-V>=b.x&&rx+V<=b.x+b.w&&y0-V>=b.y&&yN+V<=b.y+b.h;
+}
+function nsStrip(lp,rp,lbf,rbf,hb){
+  const p=new Path2D();p.moveTo(...lp[0]);
+  for(let s=0;s<lp.length-1;s++)arcP(p,...lp[s],...lp[s+1],lbf(s));
+  arcP(p,...lp[lp.length-1],...rp[rp.length-1],hb);
+  for(let s=rp.length-1;s>0;s--)arcP(p,...rp[s],...rp[s-1],-rbf(s-1));
+  arcP(p,...rp[0],...lp[0],-hb);p.closePath();return p;
+}
+function clip(ctx,b,fn){ctx.save();ctx.beginPath();ctx.rect(b.x,b.y,b.w,b.h);ctx.clip();fn();ctx.restore();}
+function hexCenters(bbox,W){
+  const rowStep=W*Math.sqrt(3)/2,centers=[];let row=0,y=bbox.y-W;
+  while(y<=bbox.y+bbox.h+W){
+    const x0=bbox.x-W+(row%2?W/2:0);let col=0,x=x0;
+    while(x<=bbox.x+bbox.w+W){centers.push({x,y,row,col});x+=W;col++;}
+    y+=rowStep;row++;
+  }
+  return centers;
+}
+function hexOK(cx,cy,R,b){
+  for(let k=0;k<6;k++){const a=k*Math.PI/3;if(cx+R*Math.sin(a)<b.x||cx+R*Math.sin(a)>b.x+b.w||cy-R*Math.cos(a)<b.y||cy-R*Math.cos(a)>b.y+b.h)return false;}return true;
+}
+
+function draw(id,fn){
+  const cv=document.getElementById(id);
+  const ctx=cv.getContext('2d');
+  fn(ctx,cv.width,cv.height);
+}
+
+setTimeout(()=>{
+  // Studio — Fish Scale
+  draw('cv-studio',(ctx,W,H)=>{
+    ctx.fillStyle='#0f0f1a';ctx.fillRect(0,0,W,H);
+    const b={x:0,y:0,w:W,h:H},cw=50,ch=50,V=15;
+    const{dots,vc}=buildNS(gbNS(b,V,ch),cw,ch);
+    clip(ctx,b,()=>{
+      for(let ci=0;ci<vc.length-1;ci++){
+        const lp=cPts(dots,vc[ci]),rp=cPts(dots,vc[ci+1]);
+        if(!arcOK(lp,rp,V,b))continue;
+        ctx.fillStyle=ci%2?'#f5a623':'#e06040';
+        ctx.fill(nsStrip(lp,rp,_=>V,_=>V,V));
+      }
+    });
+  });
+
+  // Guide — Sine Offsets
+  draw('cv-guide',(ctx,W,H)=>{
+    ctx.fillStyle='#0a0f12';ctx.fillRect(0,0,W,H);
+    const b={x:0,y:0,w:W,h:H},cw=58,ch=58,NS=24;
+    const cxs=[],dys=[];
+    for(let x=b.x;x<=b.x+b.w+1;x+=cw)cxs.push(x);
+    const lvy=b.y+Math.floor(b.h/(ch/2))*(ch/2);
+    for(let y=b.y;y<=lvy+.5;y+=ch/2)dys.push(y);
+    const cfn=(xc,ci,y)=>xc+(cw/2)*Math.cos(2*Math.PI*(y-b.y)/ch+Math.PI*ci);
+    const bpts=(xc,ci)=>{const pts=[];for(let sg=0;sg<dys.length-1;sg++){const y0=dys[sg],y1=dys[sg+1];for(let i=0;i<NS;i++){const t=i/NS,y=y0+t*(y1-y0);pts.push([cfn(xc,ci,y),y]);}}pts.push([cfn(xc,ci,dys[dys.length-1]),dys[dys.length-1]]);return pts;};
+    clip(ctx,b,()=>{
+      for(let ci=0;ci<cxs.length-1;ci++){
+        if(cxs[ci]-cw/2<b.x||cxs[ci+1]+cw/2>b.x+b.w)continue;
+        const lp=bpts(cxs[ci],ci),rp=bpts(cxs[ci+1],ci+1);
+        ctx.fillStyle=ci%2?'#00e5c0':'#00b896';
+        const path=new Path2D();path.moveTo(...lp[0]);lp.slice(1).forEach(q=>path.lineTo(...q));
+        path.lineTo(...rp[rp.length-1]);for(let i=rp.length-2;i>=0;i--)path.lineTo(...rp[i]);
+        path.closePath();ctx.fill(path);
+      }
+    });
+  });
+
+  // Game — Hex ×3
+  draw('cv-game',(ctx,W,H)=>{
+    ctx.fillStyle='#0d0a18';ctx.fillRect(0,0,W,H);
+    const b={x:0,y:0,w:W,h:H},hw=50,R=hw/Math.sqrt(3);
+    const colors=['#7c3aed','#a855f7','#c8c0ff'];
+    const cf=(row,col)=>{const q=col-Math.floor((row-(row&1))/2);return((q+2*row)%3+3)%3;};
+    clip(ctx,b,()=>{
+      hexCenters(b,hw).filter(({x,y})=>hexOK(x,y,R,b)).forEach(({x,y,row,col})=>{
+        ctx.fillStyle=colors[cf(row,col)];
+        ctx.beginPath();
+        for(let k=0;k<6;k++){const a=k*Math.PI/3;k===0?ctx.moveTo(x+R*Math.sin(a),y-R*Math.cos(a)):ctx.lineTo(x+R*Math.sin(a),y-R*Math.cos(a));}
+        ctx.closePath();ctx.fill();
+      });
+    });
+  });
+},100);
+</script>
+</body>
+</html>
